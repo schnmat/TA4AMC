@@ -1,0 +1,38 @@
+{
+  "intents": [
+    {
+      "intent": "SetZipCodeIntent",
+      "slots": [
+	  {
+		"name": "zipCode",
+		"type": "NUMBER"
+		}
+	]
+    },
+    {
+      "intent": "GetZipCodeIntent",
+      "slots": []
+    },
+    {
+      "intent": "SetFavoriteTheatreIntent",
+      "slots": [
+	  {
+		"name": "FavoriteTheatre",
+		"type": "LITERAL"
+		}
+	]
+    },
+    {
+      "intent": "GetFavoriteTheatreIntent",
+      "slots": []
+    },
+    {
+      "intent": "NowPlayingIntent",
+      "slots": []
+    },
+    {
+      "intent": "ShowtimesIntent",
+      "slots": []
+    }
+  ]
+}
