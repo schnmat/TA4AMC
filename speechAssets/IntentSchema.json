@@ -17,7 +17,7 @@
       "intent": "SetFavoriteTheatreIntent",
       "slots": [
 	  {
-		"name": "FavoriteTheatre",
+		"name": "favoriteTheatre",
 		"type": "LITERAL"
 		}
 	]
@@ -33,6 +33,15 @@
     {
       "intent": "ShowtimesIntent",
       "slots": []
+    },
+    {
+      "intent": "GetMovieShowtimesIntent",
+      "slots": [
+        {
+      		"name": "movieName",
+      		"type": "LITERAL"
+        }
+      ]
     }
   ]
 }

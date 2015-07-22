@@ -4,7 +4,9 @@ SetZipCodeIntent set my zip code to {six two nine zero one|zipCode}
 
 GetZipCodeIntent what is my zip code
 
-SetFavoriteTheatreIntent My theatre is {Showplace Carbondale eight|FavoriteTheatre}
+SetFavoriteTheatreIntent My theatre is {showplace carbondale eight|favoriteTheatre}
 
 NowPlayingIntent What is playing right now
 NowPlayingIntent What movies are playing right now
+
+GetMovieShowtimesIntent When is {batman|movieName} playing
