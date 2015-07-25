@@ -7,7 +7,7 @@ var storage = (function () {
     var dynamodb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
 
     /*
-     * The Theatre class stores all theatre states for the user
+     * The Theatre class stores all game states for the user
      */
     function Theatre(session, data) {
         if (data) {
@@ -22,22 +22,10 @@ var storage = (function () {
     }
 
     Theatre.prototype = {
-        isEmptyTheatre: function () {
-            //check if any one had non-zero score,
-            //it can be used as an indication of whether the theatre has just started
-            var allEmpty = true;
-            var theatreData = this.data;
-            theatreData.localTheatres.forEach(function (theatre) {
-                if (theatreData.theatre[theatre] !== 0) {
-                    allEmpty = false;
-                }
-            });
-            return allEmpty;
-        },
         save: function (callback) {
-            //save the theatre states in the session,
+            //save the game states in the session,
             //so next time we can save a read from dynamoDB
-            this._session.attributes.currentTheatre = this.data;
+            this._session.attributes.currentGame = this.data;
             dynamodb.putItem({
                 TableName: 'AMCUserData',
                 Item: {
@@ -60,10 +48,10 @@ var storage = (function () {
     };
 
     return {
-        loadTheatre: function (session, callback) {
-            if (session.attributes.currentTheatre) {
-                console.log('get data from session=' + session.attributes.currentTheatre);
-                callback(new Theatre(session, session.attributes.currentTheatre));
+        loadGame: function (session, callback) {
+            if (session.attributes.currentGame) {
+                console.log('get game from session=' + session.attributes.currentGame);
+                callback(new Theatre(session, session.attributes.currentGame));
                 return;
             }
             dynamodb.getItem({
@@ -74,25 +62,25 @@ var storage = (function () {
                     }
                 }
             }, function (err, data) {
-                var currentTheatre;
+                var currentGame;
                 if (err) {
                     console.log(err, err.stack);
-                    currentTheatre = new Theatre(session);
-                    session.attributes.currentTheatre = currentTheatre.data;
-                    callback(currentTheatre);
+                    currentGame = new Theatre(session);
+                    session.attributes.currentGame = currentGame.data;
+                    callback(currentGame);
                 } else if (data.Item === undefined) {
-                    currentTheatre = new Theatre(session);
-                    session.attributes.currentTheatre = currentTheatre.data;
-                    callback(currentTheatre);
+                    currentGame = new Theatre(session);
+                    session.attributes.currentGame = currentGame.data;
+                    callback(currentGame);
                 } else {
-                    console.log('get data from dynamodb=' + data.Item.Data.S);
-                    currentTheatre = new Theatre(session, JSON.parse(data.Item.Data.S));
-                    session.attributes.currentTheatre = currentTheatre.data;
-                    callback(currentTheatre);
+                    console.log('get game from dynamodb=' + data.Item.Data.S);
+                    currentGame = new Theatre(session, JSON.parse(data.Item.Data.S));
+                    session.attributes.currentGame = currentGame.data;
+                    callback(currentGame);
                 }
             });
         },
-        newTheatre: function (session) {
+        newGame: function (session) {
             return new Theatre(session);
         }
     };
