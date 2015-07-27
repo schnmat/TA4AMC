@@ -7,7 +7,7 @@ var storage = (function () {
     var dynamodb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
 
     /*
-     * The Theatre class stores all game states for the user
+     * The Theatre class stores all theatre states for the user
      */
     function Theatre(session, data) {
         if (data) {
@@ -23,9 +23,9 @@ var storage = (function () {
 
     Theatre.prototype = {
         save: function (callback) {
-            //save the game states in the session,
+            //save the theatre states in the session,
             //so next time we can save a read from dynamoDB
-            this._session.attributes.currentGame = this.data;
+            this._session.attributes.currentTheatre = this.data;
             dynamodb.putItem({
                 TableName: 'AMCUserData',
                 Item: {
@@ -48,10 +48,10 @@ var storage = (function () {
     };
 
     return {
-        loadGame: function (session, callback) {
-            if (session.attributes.currentGame) {
-                console.log('get game from session=' + session.attributes.currentGame);
-                callback(new Theatre(session, session.attributes.currentGame));
+        loadTheatre: function (session, callback) {
+            if (session.attributes.currentTheatre) {
+                console.log('get theatre from session=' + session.attributes.currentTheatre);
+                callback(new Theatre(session, session.attributes.currentTheatre));
                 return;
             }
             dynamodb.getItem({
@@ -62,25 +62,25 @@ var storage = (function () {
                     }
                 }
             }, function (err, data) {
-                var currentGame;
+                var currentTheatre;
                 if (err) {
                     console.log(err, err.stack);
-                    currentGame = new Theatre(session);
-                    session.attributes.currentGame = currentGame.data;
-                    callback(currentGame);
+                    currentTheatre = new Theatre(session);
+                    session.attributes.currentTheatre = currentTheatre.data;
+                    callback(currentTheatre);
                 } else if (data.Item === undefined) {
-                    currentGame = new Theatre(session);
-                    session.attributes.currentGame = currentGame.data;
-                    callback(currentGame);
+                    currentTheatre = new Theatre(session);
+                    session.attributes.currentTheatre = currentTheatre.data;
+                    callback(currentTheatre);
                 } else {
-                    console.log('get game from dynamodb=' + data.Item.Data.S);
-                    currentGame = new Theatre(session, JSON.parse(data.Item.Data.S));
-                    session.attributes.currentGame = currentGame.data;
-                    callback(currentGame);
+                    console.log('get Theatre from dynamodb=' + data.Item.Data.S);
+                    currentTheatre = new Theatre(session, JSON.parse(data.Item.Data.S));
+                    session.attributes.currentTheatre = currentTheatre.data;
+                    callback(currentTheatre);
                 }
             });
         },
-        newGame: function (session) {
+        newTheatre: function (session) {
             return new Theatre(session);
         }
     };
