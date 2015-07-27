@@ -2,7 +2,7 @@
 // Copyright (c) 2014-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved. Use is subject to license terms.
 'use strict';
 var storage = require('./storage'),
-    textHelper = require('./apiHandlers'),
+    helperFunctions = require('./helperFunctions'),
     textHelper = require('./textHelper');
 
 var registerEventHandlers = function (eventHandlers, skillContext) {
@@ -15,28 +15,16 @@ var registerEventHandlers = function (eventHandlers, skillContext) {
     eventHandlers.onLaunch = function (launchRequest, session, response) {
         //Speak welcome message and ask user questions
         //based on whether there are players or not.
-        storage.loadGame(session, function (currentGame) {
+        storage.loadTheatre(session, function (currentTheatre) {
             var speechOutput = '',
                 reprompt;
                 
-            //Check if the dynamoDB properties exist, if not, create them:
-            if(!currentGame.data.hasOwnProperty('localTheatres')) {
-                currentGame.data.theatre = [];
-            }
-            if(!currentGame.data.hasOwnProperty('theatre')) {
-                currentGame.data.theatre = {};
-            }
-            if(!currentGame.data.theatre.hasOwnProperty('zipCode')) {
-                currentGame.data.theatre["zipCode"] = 0;
-            }
-            if(!currentGame.data.theatre.hasOwnProperty('favoriteTheatre')) {
-                currentGame.data.theatre["favoriteTheatre"] = 0;
-            }
+            helperFunctions.checkSessionVariables(currentTheatre);
                 
-            if (currentGame.data.hasOwnProperty('theatre') && currentGame.data.theatre.hasOwnProperty('zipCode') && currentGame.data.theatre["zipCode"] < 1) {
+            if (currentTheatre.data.hasOwnProperty('theatre') && currentTheatre.data.theatre.hasOwnProperty('zipCode') && currentTheatre.data.theatre["zipCode"] < 1) {
                 speechOutput += 'Welcome to AMC Theatres, Please tell me your zip code.';
                 reprompt = "Please tell me your zip code so that I can find showtimes for your local theatres.";
-            } else if (currentGame.data.hasOwnProperty('theatre') && currentGame.data.theatre.hasOwnProperty('favoriteTheatre') && currentGame.data.theatre["favoriteTheatre"] < 1) {
+            } else if (currentTheatre.data.hasOwnProperty('theatre') && currentTheatre.data.theatre.hasOwnProperty('favoriteTheatre') && currentTheatre.data.theatre["favoriteTheatre"] < 1) {
                 speechOutput += 'Welcome to AMC Theatres, I don\'t have a theatre set as your favorite yet.';
                 reprompt = textHelper.completeHelp;
             } else {
