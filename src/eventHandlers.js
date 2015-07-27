@@ -21,10 +21,10 @@ var registerEventHandlers = function (eventHandlers, skillContext) {
                 
             helperFunctions.checkSessionVariables(currentTheatre);
                 
-            if (currentTheatre.data.hasOwnProperty('theatre') && currentTheatre.data.theatre.hasOwnProperty('zipCode') && currentTheatre.data.theatre["zipCode"] < 1) {
+            if (currentTheatre.data.location.zipCode < 1) {
                 speechOutput += 'Welcome to AMC Theatres, Please tell me your zip code.';
                 reprompt = "Please tell me your zip code so that I can find showtimes for your local theatres.";
-            } else if (currentTheatre.data.hasOwnProperty('theatre') && currentTheatre.data.theatre.hasOwnProperty('favoriteTheatre') && currentTheatre.data.theatre["favoriteTheatre"] < 1) {
+            } else if (currentTheatre.data.favoriteTheatre.id < 1) {
                 speechOutput += 'Welcome to AMC Theatres, I don\'t have a theatre set as your favorite yet.';
                 reprompt = textHelper.completeHelp;
             } else {

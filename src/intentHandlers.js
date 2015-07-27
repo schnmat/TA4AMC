@@ -15,56 +15,14 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     'Please tell me your zip code so that I can find showtimes in your area.');
                 return;
             }
-            currentTheatre.data.theatre['zipCode'] = 0;
-            currentTheatre.data.theatre['favoriteTheatre'] = 0;
+            
+            helperFunctions.checkSessionVariables;
+            
             currentTheatre.save(function () {
-                var speechOutput = 'Zip code ' + currentTheatre.data.theatre['zipCode'] + ' saved.';
+                var speechOutput = 'Zip code ' + currentTheatre.data.location.zipCode + ' saved.';
                 if (skillContext.needMoreHelp) {
                     speechOutput += '. You can tell me your favorite theatre, ask what\'s playing right now, or get showtimes for a movie. What would you like?';
                     response.ask(speechOutput);
-                } else {
-                    response.tell(speechOutput);
-                }
-            });
-        });
-    };
-
-    intentHandlers.AddPlayerIntent = function (intent, session, response) {
-        //add a player to the current game,
-        //terminate or continue the conversation based on whether the intent
-        //is from a one shot command or not.
-        var newPlayerName = textHelper.getPlayerName(intent.slots.PlayerName.value);
-        if (!newPlayerName) {
-            response.ask('OK. Who do you want to add?');
-            return;
-        }
-        storage.loadTheatre(session, function (currentTheatre) {
-            var speechOutput,
-                reprompt;
-            if (currentTheatre.data.scores[newPlayerName] !== undefined) {
-                speechOutput = newPlayerName + ' has already joined the game.';
-                if (skillContext.needMoreHelp) {
-                    response.ask(speechOutput + ' What else?');
-                } else {
-                    response.tell(speechOutput);
-                }
-                return;
-            }
-            speechOutput = newPlayerName + ' has joined your game. ';
-            currentTheatre.data.players.push(newPlayerName);
-            currentTheatre.data.scores[newPlayerName] = 0;
-            if (skillContext.needMoreHelp) {
-                if (currentTheatre.data.players.length == 1) {
-                    speechOutput += 'You can say, I am Done Adding Players. Now who\'s your next player?';
-                    reprompt = textHelper.nextHelp;
-                } else {
-                    speechOutput += 'Who is your next player?';
-                    reprompt = textHelper.nextHelp;
-                }
-            }
-            currentTheatre.save(function () {
-                if (reprompt) {
-                    response.ask(speechOutput, reprompt);
                 } else {
                     response.tell(speechOutput);
                 }
@@ -90,7 +48,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         storage.loadTheatre(session, function (currentTheatre) {
             helperFunctions.checkSessionVariables(currentTheatre);
             
-            currentTheatre.data.theatre['zipCode'] = zipCode;
+            currentTheatre.data.location.zipCode = zipCode;
             speechOutput += 'Thank you, saving zip code, ' + zipCode + '. ';
 
             api.fetchLocation('address=' + zipCode, function apiResponseCallback(err, apiResponse) {
@@ -100,6 +58,8 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     var city = apiResponse.results[0].address_components[1].long_name,
                         state = apiResponse.results[0].address_components[2].long_name;
                         //speechOutput += ' - ' + 'state=' + state.replace(' ', '-') + '&city=' + city.replace(' ', '-');
+                    currentTheatre.data.location.city = city;
+                    currentTheatre.data.location.state= state;
                 }
                 
                 //Note: City and State needs to have spaces replaced with dashes.
@@ -113,16 +73,29 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         currentTheatre.data.localTheatres = [];
                         
                         if(theatres.length < 1) {
-                            speechOutput += 'Unfortunately it doesn\'t look like there are any AMC theatres in your hometown. If the theatre that you visit is in another city, please set your zip code to that city.';
+                            speechOutput += 'Unfortunately it doesn\'t look like there are any AMC theatres in your city. If the theatre that you visit is in another city, please set your zip code to that city.';
                         } else {
                             theatres.forEach(function(element) {
                                 currentTheatre.data.localTheatres.push({'id': element.id, 'name': element.name});                          
                             }, this);
+                            if(theatres.length === 1) {
+                                currentTheatre.data.favoriteTheatre = {'id': currentTheatre.data.localTheatres[0].id, 'name': currentTheatre.data.localTheatres[0].name};
+                                speechOutput += 'I found one theatre in your city. ' + currentTheatre.data.localTheatres[0].name + '. ';
+                            } else {
+                                speechOutput += 'Here are the theatres I found in your city. ';
+                                for(var i = 0, l = currentTheatre.data.localTheatres.length; i < l; i++) {
+                                    if(i == (l - 1)) {
+                                        speechOutput += 'and ' + currentTheatre.data.localTheatres[i].name + '. ';
+                                    } else {
+                                        speechOutput += currentTheatre.data.localTheatres[i].name + ', ';
+                                    }
+                                }
+                            }
                         }
                     }
                     
                     currentTheatre.save(function () {
-                        response.tell(speechOutput);
+                        response.tellWithCard(speechOutput, 'AMC Zip Code Request', speechOutput);
                     });
                 });
             });
@@ -131,21 +104,24 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
 
     intentHandlers.SetFavoriteTheatreIntent = function (intent, session, response) {
         //give a player points, ask additional question if slot values are missing.
-        var zipCode = intent.slots.zipCode.value;
-        if (!zipCode) {
-            response.ask('sorry, I did not hear your zip code, please say again?');
+        var favoriteTheatre = intent.slots.favoriteTheatre.value;
+        if (!favoriteTheatre) {
+            response.ask('sorry, I did not hear you say a theatre, please say again?');
             return;
         }
-        zipCode = parseInt(zipCode);
-        if (isNaN(zipCode)) {
-            console.log('Invalid zip code = ' + zipCode);
-            response.ask('sorry, I did not hear your zip code, please say again?');
-            return;
-        }
+
+        helperFunctions.checkSessionVariables;
+
         storage.loadTheatre(session, function (currentTheatre) {
             var speechOutput = '';
-            currentTheatre.data.theatre['zipCode'] = zipCode;
-            speechOutput += 'Thank you, saving zip code, ' + zipCode + '. ';
+            currentTheatre.data.localTheatres.forEach(function(element) {
+                if(element.name.toLowerCase() == favoriteTheatre.toLowerCase()) {
+                    currentTheatre.data.favoriteTheatre.id = element.id;
+                    currentTheatre.data.favoriteTheatre.name = element.name;            
+                    speechOutput += 'Thank you, saving your favorit theatre, ' + element.name + '. ';
+                }
+            }, this);
+
             currentTheatre.save(function () {
                 response.tell(speechOutput);
             });
@@ -157,7 +133,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         storage.loadTheatre(session, function (currentTheatre) {
             var speechOutput = '';
 
-            speechOutput += 'The zip code that I have saved is, ' + currentTheatre.data.theatre['zipCode'] +'.';
+            speechOutput += 'The zip code that I have saved is, ' + currentTheatre.data.location.zipCode +'.';
             response.tellWithCard(speechOutput, 'AMC Zip Code Request', speechOutput);
         });
     };

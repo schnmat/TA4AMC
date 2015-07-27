@@ -15,7 +15,8 @@ var storage = (function () {
         } else {
             this.data = {
                 localTheatres: [],
-                theatre: {}
+                location: {},
+                favoriteTheatre: {}
             };
         }
         this._session = session;
