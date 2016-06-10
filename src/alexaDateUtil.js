@@ -124,6 +124,28 @@ var alexaDateUtil = (function () {
             minutes = minutes < 10 ? '0' + minutes : minutes;
             var formattedTime = hours + ':' + minutes + ' ' + ampm;
             return formattedTime;
+        },
+
+        /**
+         * Returns the current date formatted so that it can be used
+         * in an api call (mm-dd-yyyy). Dashes can be replaced with
+         * slashes if that format is desired.
+         */
+        getTodaysDate: function() {
+            var today = new Date();
+            var dd = today.getDate();
+            var mm = today.getMonth() + 1;
+            var yyyy = today.getFullYear();
+
+            if(dd < 10) { // Append zeros for all days before the tenth.
+                dd = '0' + dd
+            } 
+
+            if(mm < 10) { //Append zeros for all months before October.
+                mm = '0' + mm
+            } 
+
+            return (mm + '-' + dd + '-' + yyyy);
         }
     };
 })();

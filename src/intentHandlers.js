@@ -4,6 +4,7 @@
 var textHelper = require('./textHelper'),
     helperFunctions = require('./helperFunctions'),
     api = require('./apiHandlers'),
+    dateUtil = require('./alexaDateUtil'),
     locationFinder = require('./locationFinder'),
     storage = require('./storage');
 
@@ -130,6 +131,16 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             });
         });
     };
+    
+    intentHandlers.GetFavoriteTheatreIntent = function (intent, session, response) {
+        storage.loadTheatre(session, function (currentTheatre) {
+            var speechOutput = '';
+            helperFunctions.checkSessionVariables(currentTheatre);
+
+            speechOutput += 'The theatre that I have saved as your favorite is, ' + currentTheatre.data.favoriteTheatre +'.';
+            response.tellWithCard(speechOutput, 'AMC Favorite Theatre Request', speechOutput);
+        });
+    };
 
     intentHandlers.ListLocalTheatresIntent = function (intent, session, response) {
         storage.loadTheatre(session, function (currentTheatre) {
@@ -157,11 +168,30 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         storage.loadTheatre(session, function (currentTheatre) {
             var speechOutput = '';
             helperFunctions.checkSessionVariables(currentTheatre);
+
+            //response.tell(currentTheatre.data.favoriteTheatre);
                     
-            if(currentTheatre.data.favoriteTheatre == {} ) {
-                speechOutput = 'I\'m sorry, I don\'t know which theatre to look up movies in.';
+            if(currentTheatre.data.favoriteTheatre.id > 0) {
+                speechOutput += 'Now playing in ' + currentTheatre.data.favoriteTheatre.name + '. ';
+                
+                var callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + dateUtil.getTodaysDate();
+                api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                    if (err) {
+                        speechOutput = 'Sorry, the AMC API service is experiencing a problem. Please try again later.';
+                    } else {
+                        var movies = apiResponse._embedded.showtimes;
+                        for(var i = 0, l = movies.length; i < l; i++) {
+                            if(i == (l - 1)) {
+                                speechOutput += 'and ' + movies[i].movieName + '. ';
+                            } else {
+                                speechOutput += movies[i].movieName + ', ';
+                            }
+                        }
+                    }
+                    response.tell(speechOutput);
+                });                
             } else {
-                speechOutput += 'Now playing in ' + currentTheatre.data.favoriteTheatre.name +'. ';
+                speechOutput += 'Now playing in a theatre near you.';
                 
                 api.makeRequest('movies/views/now-playing', function apiResponseCallback(err, apiResponse) {
                     if (err) {
@@ -177,7 +207,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         }
                     }
                     response.tell(speechOutput);
-                });
+                });                                   
             }
         });
     };
