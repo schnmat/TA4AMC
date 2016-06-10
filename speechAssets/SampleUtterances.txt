@@ -4,9 +4,43 @@ SetZipCodeIntent set my zip code to {six two nine zero one|zipCode}
 
 GetZipCodeIntent what is my zip code
 
-SetFavoriteTheatreIntent My theatre is {showplace carbondale eight|favoriteTheatre}
+SetFavoriteTheatreIntent my theatre is {showplace carbondale eight|favoriteTheatre}
+SetFavoriteTheatreIntent my favorite theatre is {showplace carbondale eight|favoriteTheatre}
+SetFavoriteTheatreIntent my preferred theatre is {showplace carbondale eight|favoriteTheatre}
+SetFavoriteTheatreIntent set my theatre to {showplace carbondale eight|favoriteTheatre}
+SetFavoriteTheatreIntent set my favorite theatre to {showplace carbondale eight|favoriteTheatre}
+SetFavoriteTheatreIntent set my preferred theatre to {showplace carbondale eight|favoriteTheatre}
+SetFavoriteTheatreIntent save my theatre as {showplace carbondale eight|favoriteTheatre}
+SetFavoriteTheatreIntent save my favorite theatre as {showplace carbondale eight|favoriteTheatre}
+SetFavoriteTheatreIntent save my preferred theatre as {showplace carbondale eight|favoriteTheatre}
+
+GetFavoriteTheatreIntent what is my preferred theatre
+GetFavoriteTheatreIntent what is my favorite theatre
+GetFavoriteTheatreIntent what is my saved theatre
+
+ListLocalTheatresIntent what theatres are in my area
+ListLocalTheatresIntent what theatres are in my hometown
+ListLocalTheatresIntent what theatres are near me
+ListLocalTheatresIntent what theatres are there
+ListLocalTheatresIntent what theatres are there here
+ListLocalTheatresIntent what theatres are here
 
 NowPlayingIntent What is playing right now
 NowPlayingIntent What movies are playing right now
+
+ComingSoonIntent What is coming soon
+ComingSoonIntent What movies are coming soon
+ComingSoonIntent What movies are coming out
+ComingSoonIntent What movies are coming next
+ComingSoonIntent What is playing in the future
+ComingSoonIntent What is coming in the future
+ComingSoonIntent What movies are playing in the future
+ComingSoonIntent What movies are playing soon
+ComingSoonIntent What is coming soon
+
+GetMovieDetailsIntent Tell me about {batman|movieName}
+GetMovieDetailsIntent More about {batman|movieName}
+GetMovieDetailsIntent What about {batman|movieName}
+GetMovieDetailsIntent What is {batman|movieName} about
 
 GetMovieShowtimesIntent When is {batman|movieName} playing
