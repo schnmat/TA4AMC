@@ -118,7 +118,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             helperFunctions.checkSessionVariables(currentTheatre);
 
             currentTheatre.data.localTheatres.forEach(function(element) {
-                favoriteTheatre = textHelper.parseStringsToNumbers(favoriteTheatre);
+                favoriteTheatre = textHelper.parseNumbersInString(favoriteTheatre);
                 var checkName = element.name.replace('AMC ', '').toLowerCase();
                 if(element.name.toLowerCase() == favoriteTheatre.toLowerCase() || checkName == favoriteTheatre.toLowerCase()) {
                     currentTheatre.data.favoriteTheatre = {'id':element.id,'name':element.name};            
@@ -171,10 +171,58 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
 
             //response.tell(currentTheatre.data.favoriteTheatre);
                     
-            if(currentTheatre.data.favoriteTheatre.id > 0) {
+            if(currentTheatre.data.favoriteTheatre.id != null && currentTheatre.data.favoriteTheatre.id > 0) {
                 speechOutput += 'Now playing in ' + currentTheatre.data.favoriteTheatre.name + '. ';
                 
                 var callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + dateUtil.getTodaysDate();
+                api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                    if (err) {
+                        speechOutput = 'Sorry, the AMC API service is experiencing a problem. Please try again later.';
+                    } else {
+                        var movies = apiResponse._embedded.showtimes;
+                        for(var i = 0, l = movies.length; i < l; i++) {
+                            if(i == (l - 1)) {
+                                speechOutput += 'and ' + movies[i].movieName + '. ';
+                            } else {
+                                speechOutput += movies[i].movieName + ', ';
+                            }
+                        }
+                    }
+                    response.tell(speechOutput);
+                });                
+            } else {
+                speechOutput += 'Now playing in a theatre near you.';
+                
+                api.makeRequest('movies/views/now-playing', function apiResponseCallback(err, apiResponse) {
+                    if (err) {
+                        speechOutput = 'Sorry, the AMC API service is experiencing a problem. Please try again later.';
+                    } else {
+                        var movies = apiResponse._embedded.movies;
+                        for(var i = 0, l = movies.length; i < l; i++) {
+                            if(i == (l - 1)) {
+                                speechOutput += 'and ' + movies[i].name + '. ';
+                            } else {
+                                speechOutput += movies[i].name + ', ';
+                            }
+                        }
+                    }
+                    response.tell(speechOutput);
+                });                                   
+            }
+        });
+    };
+
+    intentHandlers.PlayingTomorrowIntent = function (intent, session, response) {
+        storage.loadTheatre(session, function (currentTheatre) {
+            var speechOutput = '';
+            helperFunctions.checkSessionVariables(currentTheatre);
+
+            //response.tell(currentTheatre.data.favoriteTheatre);
+                    
+            if(currentTheatre.data.favoriteTheatre.id != null && currentTheatre.data.favoriteTheatre.id > 0) {
+                speechOutput += 'Playing tomorrow in ' + currentTheatre.data.favoriteTheatre.name + '. ';
+                
+                var callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + dateUtil.getTomorrowsDate();
                 api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                     if (err) {
                         speechOutput = 'Sorry, the AMC API service is experiencing a problem. Please try again later.';
@@ -217,8 +265,25 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             var speechOutput = '';
             helperFunctions.checkSessionVariables(currentTheatre);
                     
-            if(currentTheatre.data.favoriteTheatre == {} ) {
-                speechOutput = 'I\'m sorry, I don\'t know which theatre to look up movies in.';
+            if(currentTheatre.data.favoriteTheatre.id != null && currentTheatre.data.favoriteTheatre.id > 0) {
+                speechOutput += 'Now playing in ' + currentTheatre.data.favoriteTheatre.name + '. ';
+                
+                var callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes';
+                api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                    if (err) {
+                        speechOutput = 'Sorry, the AMC API service is experiencing a problem. Please try again later.';
+                    } else {
+                        var movies = apiResponse._embedded.showtimes;
+                        for(var i = 0, l = movies.length; i < l; i++) {
+                            if(i == (l - 1)) {
+                                speechOutput += 'and ' + movies[i].movieName + '. ';
+                            } else {
+                                speechOutput += movies[i].movieName + ', ';
+                            }
+                        }
+                    }
+                    response.tell(speechOutput);
+                });                
             } else {
                 speechOutput += 'Coming soon to ' + currentTheatre.data.favoriteTheatre.name +'. ';
                 
@@ -262,42 +327,78 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
     };
 
     intentHandlers.GetMovieShowtimesIntent = function (intent, session, response) {
-        var speechOutput;
-        var movieNameSlot = intent.slots.movieName, movieName;
-        
-        // slots can be missing, or slots can be provided but with empty value.
-        // must test for both.
-        if (!movieNameSlot || !movieNameSlot.value) {
-            speechOutput = 'I\'m sorry, I don\'t think I heard you correctly. What movie where you looking for?';
-            var repromptText = 'What was that movie again?';
-            response.ask(speechOutput, repromptText);
-            return;
-        } else {
-            movieName = movieNameSlot.value;
-            
-            api.makeRequest('movies?name=' + movieName, function apiResponseCallback(err, apiResponse) {
-                var speechOutput;
-                var cardOutput;
-                
-                if (err) {
-                    speechOutput = 'Sorry, the AMC API service is experiencing a problem. Please try again later.';
-                    cardOutput = speechOutput + ' ' + err;
-                } else {
-                    var movies = new Array();
-                    movies = apiResponse._embedded.movies;
+        storage.loadTheatre(session, function (currentTheatre) {
+            var speechOutput = '', cardOutput = '';
+            var movieNameSlot = intent.slots.movieName, movieName;
+            helperFunctions.checkSessionVariables(currentTheatre);
+
+            // slots can be missing, or slots can be provided but with empty value.
+            // must test for both.
+            if (!movieNameSlot || !movieNameSlot.value) {
+                speechOutput = 'I\'m sorry, I don\'t think I heard you correctly. What movie where you looking for?';
+                response.ask(speechOutput, 'What was that movie again?');
+                return;
+            } else {
+                movieName = helperFunctions.replaceAll(movieNameSlot.value, ' ', '-');
+
+                var callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + dateUtil.getTodaysDate() + '/?movie=' + movieName;            
+                api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                     
+                    if (err) {
+                        movieName = helperFunctions.parseNumbersInString(movieName);
+                        callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + dateUtil.getTodaysDate() + '/?movie=' + movieName;
+                        api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                     
-                    if(movies.length < 1) {
-                        speechOutput = 'Sorry, I couldn\'t find the movie you were looking for.';
+                            if (err) {
+
+                                speechOutput = 'Sorry, the AMC API service is experiencing a problem. Please try again later.';
+                                cardOutput = speechOutput + ' ' + err;
+                            } else {
+                                var movies = new Array();
+                                movies = apiResponse._embedded.showtimes;
+                                
+                                if(movies.length < 1) {
+                                    speechOutput = 'Sorry, I couldn\'t find the movie you were looking for.';
+                                } else {
+                                    speechOutput += movieNameSlot.value + ' is playing today at ';
+                                    
+                                    for(var i = 0, l = movies.length; i < l; i++) {
+                                        if(i == (l - 1)) {
+                                            speechOutput += 'and ' + dateUtil.getFormattedTimeAmPm(new Date(movies[i].showDateTimeLocal)) + '. ';
+                                        } else {
+                                            speechOutput += dateUtil.getFormattedTimeAmPm(new Date(movies[i].showDateTimeLocal)) + ', ';
+                                        }
+                                    }
+                                }
+                                cardOutput = speechOutput;
+                            }
+                            response.tellWithCard(speechOutput, 'AMC', cardOutput);
+                        });
                     } else {
-                        //TODO Find showtimes using user's favorite theatre. 
-                        speechOutput = 'Found movie, ' + movies[0].id + ', ' + movies[0].name;
+                        var movies = new Array();
+                        movies = apiResponse._embedded.showtimes;
+                        
+                        if(movies.length < 1) {
+                            speechOutput = 'Sorry, I couldn\'t find the movie you were looking for.';
+                        } else {
+                            speechOutput += movieNameSlot.value + ' is playing today at ';
+                            
+                            for(var i = 0, l = movies.length; i < l; i++) {
+                                if(i == (l - 1)) {
+                                    speechOutput += 'and ' + dateUtil.getFormattedTimeAmPm(new Date(movies[i].showDateTimeLocal)) + '. ';
+                                } else {
+                                    speechOutput += dateUtil.getFormattedTimeAmPm(new Date(movies[i].showDateTimeLocal)) + ', ';
+                                }
+                            }
+                        }
                         cardOutput = speechOutput;
                         response.tellWithCard(speechOutput, 'AMC', cardOutput);
                     }
-                }
-            });
-        }
+                });
+            }
+        });
     };
+
     intentHandlers.GetMovieDetailsIntent = function (intent, session, response) {
         var speechOutput;
         var movieNameSlot = intent.slots.movieName, movieName;
