@@ -30,6 +30,9 @@ var apiHandlers = (function () {
                     if (apiResponseObject.error) {
                         console.log("AMC API error: " + apiResponseObject.error.message);
                         apiResponseCallback(new Error(apiResponseObject.error.message));
+                    } else if (apiResponseObject.errors) {
+                        console.log("AMC API error: " + apiResponseObject.errors.message);
+                        apiResponseCallback(new Error(apiResponseObject.errors.message));
                     } else {
                         apiResponseCallback(null, apiResponseObject);
                     }
