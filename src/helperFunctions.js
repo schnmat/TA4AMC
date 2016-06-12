@@ -1,7 +1,18 @@
 'use strict';
 
+/**
+ * Wikipedia has a list of movies that have numbers in the name:
+ * https://www.wikiwand.com/en/List_of_films:_numbers
+ */
+
 var helperFunctions = (function () {
+
     return {
+
+        /**
+         * Checks the local session variables to make sure they have
+         * the correct properties set, and sets them to default values if needed.
+         */
         checkSessionVariables: function(currentTheatre) {
             //Check if the dynamoDB properties exist, if not, create them:
             if(!currentTheatre.data.hasOwnProperty('localTheatres')) {
@@ -29,50 +40,11 @@ var helperFunctions = (function () {
                 currentTheatre.data.favoriteTheatre.name = null;
             }
         },
-        parseStringsToNumbers: function(str) {
-            if(str.indexOf('one') > -1 || str.indexOf('One') > -1) {
-                str = str.replace('one', '1');
-                str = str.replace('One', '1');
-            }
-            if(str.indexOf('two') > -1 || str.indexOf('Two') > -1) {
-                str = str.replace('two', '2');
-                str = str.replace('Two', '2');
-            }
-            if(str.indexOf('three') > -1 || str.indexOf('Three') > -1) {
-                str = str.replace('three', '3');
-                str = str.replace('Three', '3');
-            }
-            if(str.indexOf('four') > -1 || str.indexOf('Four') > -1) {
-                str = str.replace('four', '4');
-                str = str.replace('Four', '4');
-            }
-            if(str.indexOf('five') > -1 || str.indexOf('FIve') > -1) {
-                str = str.replace('five', '5');
-                str = str.replace('Five', '5');
-            }
-            if(str.indexOf('six') > -1 || str.indexOf('Six') > -1) {
-                str = str.replace('six', '6');
-                str = str.replace('Six', '6');
-            }
-            if(str.indexOf('seven') > -1 || str.indexOf('Seven') > -1) {
-                str = str.replace('seven', '7');
-                str = str.replace('Seven', '7');
-            }
-            if(str.indexOf('eight') > -1 || str.indexOf('Eight') > -1) {
-                str = str.replace('eight', '8');
-                str = str.replace('Eight', '8');
-            }
-            if(str.indexOf('nine') > -1 || str.indexOf('Nine') > -1) {
-                str = str.replace('nine', '9');
-                str = str.replace('Nine', '9');
-            }
-            if(str.indexOf('ten') > -1 || str.indexOf('Ten') > -1) {
-                str = str.replace('ten', '10');
-                str = str.replace('Ten', '10');
-            }
-            
-            return str;
-        },
+        
+        /**
+         * Takes a string of the movie genre (which is typically in all caps)
+         * and returns a string that can be used in the response sentence.
+         */
         parseMovieGenre: function(str) {
             var returnString = str;
             switch(str) {
@@ -84,7 +56,20 @@ var helperFunctions = (function () {
                     break;
             }
             return returnString;
+        },
+
+        /**
+         * Functions Used together to replace all instances of a character
+         * found inside of a string.
+         */
+        escapeRegExp: function(str) {
+            return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+        },
+        replaceAll: function(str, find, replace) {
+           return str.replace(new RegExp(this.escapeRegExp(find), 'g'), replace);
         }
     }
 })();
 module.exports = helperFunctions;
+
+var numberedWordsArray = ['zero','one','two','three','four', 'five','six','seven','eight','nine'];
