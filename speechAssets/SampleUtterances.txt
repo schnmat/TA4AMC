@@ -1,6 +1,6 @@
-SetZipCodeIntent {six two nine zero one|zipCode}
-SetZipCodeIntent my zip code is {six two nine zero one|zipCode}
-SetZipCodeIntent set my zip code to {six two nine zero one|zipCode}
+SetZipCodeIntent {zipCode}
+SetZipCodeIntent my zip code is {zipCode}
+SetZipCodeIntent set my zip code to {zipCode}
 
 GetZipCodeIntent what is my zip code
 
@@ -31,9 +31,9 @@ NowPlayingIntent What movies are playing right now
 PlayingTomorrowIntent What is playing tomorrow
 PlayingTomorrowIntent What movies are playing tomorrow
 
-PlayingOnDayIntent What is playing on {friday|weekday}
-PlayingOnDayIntent What movies are playing on {friday|weekday}
-PlayingOnDayIntent What movies are playing next {friday|weekday}
+PlayingOnDayIntent What is playing on {weekday}
+PlayingOnDayIntent What movies are playing on {weekday}
+PlayingOnDayIntent What movies are playing next {weekday}
 
 ComingSoonIntent What is coming soon
 ComingSoonIntent What movies are coming soon
@@ -52,3 +52,5 @@ GetMovieDetailsIntent What is {batman|movieName} about
 
 GetMovieShowtimesIntent What time is {batman|movieName} playing
 GetMovieShowtimesIntent When is {batman|movieName} playing
+GetMovieShowtimesIntent When is {the conjuring|movieName} playing
+GetMovieShowtimesIntent When is {the conjuring two|movieName} playing

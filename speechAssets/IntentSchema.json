@@ -6,7 +6,7 @@
       "slots": [
         {
         "name": "zipCode",
-        "type": "NUMBER"
+        "type": "AMAZON.NUMBER"
         }
       ]
     },
@@ -20,7 +20,7 @@
       "slots": [
         {
         "name": "favoriteTheatre",
-        "type": "LITERAL"
+        "type": "AMAZON.LITERAL"
         }
       ]
     },
@@ -50,7 +50,7 @@
       "slots": [
         {
       		"name": "weekday",
-      		"type": "LITERAL"
+      		"type": "WEEKDAY"
         }
       ]
     },
@@ -59,7 +59,7 @@
       "slots": [
         {
       		"name": "movieName",
-      		"type": "LITERAL"
+      		"type": "AMAZON.LITERAL"
         }
       ]
     },
@@ -69,7 +69,7 @@
       "slots": [
         {
       		"name": "movieName",
-      		"type": "LITERAL"
+      		"type": "AMAZON.LITERAL"
         }
       ]
     }
