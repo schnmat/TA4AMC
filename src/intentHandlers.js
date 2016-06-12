@@ -3,6 +3,7 @@
 'use strict';
 var textHelper = require('./textHelper'),
     helperFunctions = require('./helperFunctions'),
+    numberFunctions = require('./numberFunctions'),
     api = require('./apiHandlers'),
     dateUtil = require('./alexaDateUtil'),
     locationFinder = require('./locationFinder'),
@@ -118,11 +119,11 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             helperFunctions.checkSessionVariables(currentTheatre);
 
             currentTheatre.data.localTheatres.forEach(function(element) {
-                favoriteTheatre = textHelper.parseNumbersInString(favoriteTheatre);
+                favoriteTheatre = numberFunctions.parseNumbersInString(favoriteTheatre);
                 var checkName = element.name.replace('AMC ', '').toLowerCase();
                 if(element.name.toLowerCase() == favoriteTheatre.toLowerCase() || checkName == favoriteTheatre.toLowerCase()) {
                     currentTheatre.data.favoriteTheatre = {'id':element.id,'name':element.name};            
-                    speechOutput = 'Thank you, saving your favorit theatre, ' + element.name + '. ';
+                    speechOutput = 'Thank you, saving your favorite theatre, ' + element.name + '. ';
                 }
             }, this);
 
@@ -345,7 +346,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                      
                     if (err) {
-                        movieName = helperFunctions.parseNumbersInString(movieName);
+                        movieName = numberFunctions.parseNumbersInString(movieName);
                         callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + dateUtil.getTodaysDate() + '/?movie=' + movieName;
                         api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                     
@@ -360,7 +361,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                 if(movies.length < 1) {
                                     speechOutput = 'Sorry, I couldn\'t find the movie you were looking for.';
                                 } else {
-                                    speechOutput += movieNameSlot.value + ' is playing today at ';
+                                    speechOutput += movies[0].movieName + ' is playing today at ';
                                     
                                     for(var i = 0, l = movies.length; i < l; i++) {
                                         if(i == (l - 1)) {
@@ -381,7 +382,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         if(movies.length < 1) {
                             speechOutput = 'Sorry, I couldn\'t find the movie you were looking for.';
                         } else {
-                            speechOutput += movieNameSlot.value + ' is playing today at ';
+                            speechOutput += movies[0].movieName + ' is playing today at ';
                             
                             for(var i = 0, l = movies.length; i < l; i++) {
                                 if(i == (l - 1)) {
