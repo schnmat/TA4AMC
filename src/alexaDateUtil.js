@@ -74,7 +74,7 @@ var alexaDateUtil = (function () {
          * is the same as current year, it is omitted.
          * Example: 'Friday June 12th', '6/5/2016'
          */
-        getFormattedDate: function (date) {
+        getFormattedDateString: function (date) {
             var today = new Date();
 
             if (today.getFullYear() === date.getFullYear()) {
@@ -82,6 +82,24 @@ var alexaDateUtil = (function () {
             } else {
                 return DAYS_OF_WEEK[date.getDay()] + ' ' + (date.getMonth() + 1) + '/' + date.getDate() + '/' + date.getFullYear();
             }
+        },
+
+        /**
+         * Returns a date formatted with leading zeros and seperated by a
+         * character that is passed in, defaulting to a dash.
+         * (without the time). Example Output: '06-05-2016'
+         */
+        getFormattedDate: function (date, seperator) {
+            var seperator = typeof seperator !== 'undefined' ?  seperator : '-';
+            var dd = date.getDate();
+            var mm = date.getMonth() + 1; // Write January as one instead of zero.
+
+            // Append zeros for all days before the tenth.
+            dd < 10 ? dd = '0' + dd : dd;
+            //Append zeros for all months before October.
+            mm < 10 ? mm = '0' + mm : mm;
+
+            return (mm + '-' + dd + '-' + date.getFullYear());
         },
 
         /**
@@ -117,7 +135,7 @@ var alexaDateUtil = (function () {
         getFormattedTimeAmPm: function (date) {
             var hours = date.getHours();
             var minutes = date.getMinutes();
-            var ampm = hours >= 12 ? 'pm' : 'am';
+            var ampm = hours >= 12 ? 'PM' : 'AM';
 
             hours = hours % 12;
             hours = hours ? hours : 12; // handle midnight
@@ -131,22 +149,51 @@ var alexaDateUtil = (function () {
          * in an api call (mm-dd-yyyy). Dashes can be replaced with
          * slashes if that format is desired.
          */
-        getTodaysDate: function() {
+        getTodaysDate: function(separator) {
+            return this.getFormattedDate(new Date(), separator);
+        },
+        // Returns the tomorrows date.
+        getTomorrowsDate: function(separator) {
+            var tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            return this.getFormattedDate(tomorrow, separator);
+        },
+
+        /**
+         * Fetches the next occurrence of a date by weekday name (e.g. Monday).
+         * Returns a formatted date in the default format, which can be used
+         * in an api call (e.g. 06-06-2016)
+         */
+        getDayFromString: function(weekday) {
             var today = new Date();
-            var dd = today.getDate();
-            var mm = today.getMonth() + 1;
-            var yyyy = today.getFullYear();
+            var tomorrow = new Date();
+            var nextDay = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            nextDay.setDate(nextDay.getDate() + 1);
+            var found = 0;
+            
+            while(found === 0) {
+                var dayFound = DAYS_OF_WEEK[nextDay.getDay()].toLowerCase();
+                if(dayFound == weekday.toLowerCase()) {
+                    found = 1;
+                    break;
+                } else {
+                    nextDay.setDate(nextDay.getdate() + 1);
+                }
 
-            if(dd < 10) { // Append zeros for all days before the tenth.
-                dd = '0' + dd
-            } 
-
-            if(mm < 10) { //Append zeros for all months before October.
-                mm = '0' + mm
-            } 
-
-            return (mm + '-' + dd + '-' + yyyy);
+                // If it's looped around the whole week, something went wrong
+                // (perhaps the input was mis-spelled.).
+                if(DAYS_OF_WEEK[nextDay.getDay()] == DAYS_OF_WEEK[tomorrow.getDay()]) {
+                found = -1;
+                nextDay = -1; // Return an error.
+                }
+            }
+            if(nextDay === -1) {
+                throw new TypeError('Couldn\'t find the next occurrence of the day: ' + weekday, 'alexaDateUtil.js', 186);
+            } else {
+                return this.getFormattedDate(nextDay);
+            }
         }
-    };
+    }
 })();
 module.exports = alexaDateUtil;
