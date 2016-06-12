@@ -68,7 +68,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 //Note: City and State needs to have spaces replaced with dashes.
                 api.makeRequest('theatres?state=' + state.replace(' ', '-') + '&city=' + city.replace(' ', '-'), function apiResponseCallback(err, apiResponse) {
                     if (err) {
-                        speechOutput = 'Sorry, the AMC API service is experiencing a problem. Please try again later.';
+                        speechOutput = textHelper.errors.apiUnavailable;
                     } else {
                         var theatres = apiResponse._embedded.theatres;
                         //speechOutput += ' - ' + apiResponse._embedded.theatres[0].name + ' - ';
@@ -178,7 +178,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 var callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + dateUtil.getTodaysDate();
                 api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                     if (err) {
-                        speechOutput = 'Sorry, the AMC API service is experiencing a problem. Please try again later.';
+                        speechOutput = textHelper.errors.apiUnavailable;
                     } else {
                         var movies = apiResponse._embedded.showtimes;
                         for(var i = 0, l = movies.length; i < l; i++) {
@@ -196,7 +196,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 
                 api.makeRequest('movies/views/now-playing', function apiResponseCallback(err, apiResponse) {
                     if (err) {
-                        speechOutput = 'Sorry, the AMC API service is experiencing a problem. Please try again later.';
+                        speechOutput = textHelper.errors.apiUnavailable;
                     } else {
                         var movies = apiResponse._embedded.movies;
                         for(var i = 0, l = movies.length; i < l; i++) {
@@ -226,7 +226,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 var callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + dateUtil.getTomorrowsDate();
                 api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                     if (err) {
-                        speechOutput = 'Sorry, the AMC API service is experiencing a problem. Please try again later.';
+                        speechOutput = textHelper.errors.apiUnavailable;
                     } else {
                         var movies = apiResponse._embedded.showtimes;
                         for(var i = 0, l = movies.length; i < l; i++) {
@@ -244,7 +244,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 
                 api.makeRequest('movies/views/now-playing', function apiResponseCallback(err, apiResponse) {
                     if (err) {
-                        speechOutput = 'Sorry, the AMC API service is experiencing a problem. Please try again later.';
+                        speechOutput = textHelper.errors.apiUnavailable;
                     } else {
                         var movies = apiResponse._embedded.movies;
                         for(var i = 0, l = movies.length; i < l; i++) {
@@ -272,7 +272,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 var callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes';
                 api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                     if (err) {
-                        speechOutput = 'Sorry, the AMC API service is experiencing a problem. Please try again later.';
+                        speechOutput = textHelper.errors.apiUnavailable;
                     } else {
                         var movies = apiResponse._embedded.showtimes;
                         for(var i = 0, l = movies.length; i < l; i++) {
@@ -290,7 +290,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 
                 api.makeRequest('movies/views/coming-soon', function apiResponseCallback(err, apiResponse) {
                     if (err) {
-                        speechOutput = 'Sorry, the AMC API service is experiencing a problem. Please try again later.';
+                        speechOutput = textHelper.errors.apiUnavailable;
                     } else {
                         var movies = apiResponse._embedded.movies;
                         for(var i = 0, l = movies.length; i < l; i++) {
@@ -352,14 +352,14 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     
                             if (err) {
 
-                                speechOutput = 'Sorry, the AMC API service is experiencing a problem. Please try again later.';
+                                speechOutput = textHelper.errors.apiUnavailable;
                                 cardOutput = speechOutput + ' ' + err;
                             } else {
                                 var movies = new Array();
                                 movies = apiResponse._embedded.showtimes;
                                 
                                 if(movies.length < 1) {
-                                    speechOutput = 'Sorry, I couldn\'t find the movie you were looking for.';
+                                    speechOutput = textHelper.errors.movieNotFound;
                                 } else {
                                     speechOutput += movies[0].movieName + ' is playing today at ';
                                     
@@ -380,7 +380,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         movies = apiResponse._embedded.showtimes;
                         
                         if(movies.length < 1) {
-                            speechOutput = 'Sorry, I couldn\'t find the movie you were looking for.';
+                            speechOutput = textHelper.errors.movieNotFound;
                         } else {
                             speechOutput += movies[0].movieName + ' is playing today at ';
                             
@@ -426,7 +426,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     movies = apiResponse._embedded.movies;
                     
                     if(movies.length < 1) {
-                        speechOutput = 'Sorry, I couldn\'t find the movie you were looking for.';
+                        speechOutput = textHelper.errors.movieNotFound;
                     } else {
                         var movie = movies[0];
                         //TODO Find showtimes using user's favorite theatre. 

@@ -10,7 +10,11 @@ var textHelper = (function () {
         + ' set my zip to,'
         + ' set my favorite theatre to,'
         + ' and exit.',
-        nextHelp: 'You can set your zip code and favorite theatre, get currently playing movies and their showtimes, or say help. What would you like?'
+        nextHelp: 'You can set your zip code and favorite theatre, get currently playing movies and their showtimes, or say help. What would you like?',
+        errors: {
+            apiUnavailable: 'Sorry, the AMC API service is experiencing a problem. Please try again later.',
+            movieNotFound: 'Sorry, I couldn\'t find the movie you were looking for.'
+        }
     };
 })();
 module.exports = textHelper;
