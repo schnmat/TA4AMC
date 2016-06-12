@@ -28,6 +28,13 @@ ListLocalTheatresIntent what theatres are here
 NowPlayingIntent What is playing right now
 NowPlayingIntent What movies are playing right now
 
+PlayingTomorrowIntent What is playing tomorrow
+PlayingTomorrowIntent What movies are playing tomorrow
+
+PlayingOnDayIntent What is playing on {friday|weekday}
+PlayingOnDayIntent What movies are playing on {friday|weekday}
+PlayingOnDayIntent What movies are playing next {friday|weekday}
+
 ComingSoonIntent What is coming soon
 ComingSoonIntent What movies are coming soon
 ComingSoonIntent What movies are coming out
@@ -43,4 +50,5 @@ GetMovieDetailsIntent More about {batman|movieName}
 GetMovieDetailsIntent What about {batman|movieName}
 GetMovieDetailsIntent What is {batman|movieName} about
 
+GetMovieShowtimesIntent What time is {batman|movieName} playing
 GetMovieShowtimesIntent When is {batman|movieName} playing

@@ -1,41 +1,71 @@
 {
   "intents": [
+
     {
       "intent": "SetZipCodeIntent",
       "slots": [
-	  {
-		"name": "zipCode",
-		"type": "NUMBER"
-		}
-	]
+        {
+        "name": "zipCode",
+        "type": "NUMBER"
+        }
+      ]
     },
     {
       "intent": "GetZipCodeIntent",
       "slots": []
     },
+
     {
       "intent": "SetFavoriteTheatreIntent",
       "slots": [
-	  {
-		"name": "favoriteTheatre",
-		"type": "LITERAL"
-		}
-	]
+        {
+        "name": "favoriteTheatre",
+        "type": "LITERAL"
+        }
+      ]
     },
     {
       "intent": "GetFavoriteTheatreIntent",
       "slots": []
     },
     {
+      "intent": "ListLocalTheatresIntent",
+      "slots": []
+    },
+
+    {
       "intent": "NowPlayingIntent",
       "slots": []
     },
     {
-      "intent": "ShowtimesIntent",
+      "intent": "ComingSoonIntent",
       "slots": []
     },
     {
+      "intent": "PlayingTomorrowIntent",
+      "slots": []
+    },
+    {
+      "intent": "PlayingOnDayIntent",
+      "slots": [
+        {
+      		"name": "weekday",
+      		"type": "LITERAL"
+        }
+      ]
+    },
+    {
       "intent": "GetMovieShowtimesIntent",
+      "slots": [
+        {
+      		"name": "movieName",
+      		"type": "LITERAL"
+        }
+      ]
+    },
+
+    {
+      "intent": "GetMovieDetailsIntent",
       "slots": [
         {
       		"name": "movieName",
