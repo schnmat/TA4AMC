@@ -144,17 +144,29 @@ var alexaDateUtil = (function () {
             return formattedTime;
         },
 
+        getLocalDate: function(utcOffset) {
+            var date = new Date();
+            // convert to msec
+            // subtract local time zone offset
+            // get UTC time in msec
+            var utc = date.getTime() - (date.getTimezoneOffset() * 60000);
+
+            // create new Date object for different city
+            // using supplied offset
+            return new Date(utc + (3600000 * utcOffset.replace(':','.')));
+        },
+
         /**
          * Returns the current date formatted so that it can be used
          * in an api call (mm-dd-yyyy). Dashes can be replaced with
          * slashes if that format is desired.
          */
-        getTodaysDate: function(separator) {
-            return this.getFormattedDate(new Date(), separator);
+        getTodaysDate: function(utcOffset, separator) {
+            return this.getFormattedDate(this.getLocalDate(utcOffset), separator);
         },
         // Returns the tomorrows date.
-        getTomorrowsDate: function(separator) {
-            var tomorrow = new Date();
+        getTomorrowsDate: function(utcOffset, separator) {
+            var tomorrow = this.getLocalDate(utcOffset);
             tomorrow.setDate(tomorrow.getDate() + 1);
             return this.getFormattedDate(tomorrow, separator);
         },
