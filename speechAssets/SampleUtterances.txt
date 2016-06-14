@@ -1,8 +1,14 @@
-SetZipCodeIntent {zipCode}
-SetZipCodeIntent my zip code is {zipCode}
-SetZipCodeIntent set my zip code to {zipCode}
+SetLocationByZipCodeIntent {zipCode}
+SetLocationByZipCodeIntent my zip code is {zipCode}
+SetLocationByZipCodeIntent set my zip code to {zipCode}
 
 GetZipCodeIntent what is my zip code
+
+SetLocationByCityStateIntent i am in {city} {state}
+SetLocationByCityStateIntent set my location to {city} {state}
+SetLocationByCityStateIntent set my location to {city} in {state}
+SetLocationByCityStateIntent i live in {city} {state}
+SetLocationByCityStateIntent i live in {city} in {state}
 
 SetFavoriteTheatreIntent my theatre is {showplace carbondale eight|favoriteTheatre}
 SetFavoriteTheatreIntent my favorite theatre is {showplace carbondale eight|favoriteTheatre}
@@ -51,6 +57,8 @@ GetMovieDetailsIntent What about {batman|movieName}
 GetMovieDetailsIntent What is {batman|movieName} about
 
 GetMovieShowtimesIntent What time is {batman|movieName} playing
+GetMovieShowtimesIntent What time is {the conjuring|movieName} playing
+GetMovieShowtimesIntent What time is {the conjuring two|movieName} playing
 GetMovieShowtimesIntent When is {batman|movieName} playing
 GetMovieShowtimesIntent When is {the conjuring|movieName} playing
 GetMovieShowtimesIntent When is {the conjuring two|movieName} playing

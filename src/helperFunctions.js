@@ -33,6 +33,9 @@ var helperFunctions = (function () {
             if(!currentTheatre.data.location.hasOwnProperty('state')) {
                 currentTheatre.data.location.state = null;
             }
+            if(!currentTheatre.data.location.hasOwnProperty('utcoffset')) {
+                currentTheatre.data.location.utcoffset = null;
+            }
             if(!currentTheatre.data.favoriteTheatre.hasOwnProperty('id')) {
                 currentTheatre.data.favoriteTheatre.id = 0;
             }
@@ -71,5 +74,3 @@ var helperFunctions = (function () {
     }
 })();
 module.exports = helperFunctions;
-
-var numberedWordsArray = ['zero','one','two','three','four', 'five','six','seven','eight','nine'];

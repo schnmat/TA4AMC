@@ -22,16 +22,16 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         storage.loadTheatre(session, function (currentTheatre) {
             if (currentTheatre.data.players.length === 0) {
                 response.ask('Welcome to AMC Theatres. What is your zip code?',
-                    'Please tell me your zip code so that I can find showtimes in your area.');
+                    'Please tell me your location, either by city and state, or by zip code, so that I can find showtimes in your local theatre.');
                 return;
             }
             
             helperFunctions.checkSessionVariables;
             
             currentTheatre.save(function () {
-                var speechOutput = 'Zip code ' + currentTheatre.data.location.zipCode + ' saved.';
+                var speechOutput = 'Location ' + currentTheatre.data.location.state + ' saved.';
                 if (skillContext.needMoreHelp) {
-                    speechOutput += '. You can tell me your favorite theatre, ask what\'s playing right now, or get showtimes for a movie. What would you like?';
+                    speechOutput += '. You can ask me what\'s playing right now, or get showtimes for a movie. What would you like?';
                     response.ask(speechOutput);
                 } else {
                     response.tell(speechOutput);
@@ -42,15 +42,20 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
 
     /**
      * Sets the users location based on a zip code that they've input.
+     * 
      * Once their location is found and saved. The API is called to get
      * the theatres in their town. If there's only one theatre in their
      * town, it's automatically set as their favorite theatre to be used
      * as the default for showtimes.
+     * 
+     * If there's more than one theatre, the first one lsited is set as the
+     * default, until the user changes it themselves.
      */
-    intentHandlers.SetZipCodeIntent = function (intent, session, response) {
+    intentHandlers.SetLocationByZipCodeIntent = function (intent, session, response) {
         //give a player points, ask additional question if slot values are missing.
         var zipCode = intent.slots.zipCode.value;
         var speechOutput = '';
+        var cardOutput = '';
         if (!zipCode) {
             response.ask('sorry, I did not hear your zip code, please say again?');
             return;
@@ -70,51 +75,155 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
 
             api.fetchLocation('address=' + zipCode, function apiResponseCallback(err, apiResponse) {
                 if (err) {
-                    speechOutput = 'Sorry, the Google Maps API service is experiencing a problem. Please try again later.';
+                    speechOutput = textHelper.errors.googleAPIUnavailable;
+	                cardOutput = speechOutput + ' ' + err;
                 } else {
-                    var city = apiResponse.results[0].address_components[1].long_name,
-                        state = apiResponse.results[0].address_components[2].long_name;
-                        //speechOutput += ' - ' + 'state=' + state.replace(' ', '-') + '&city=' + city.replace(' ', '-');
-                    currentTheatre.data.location.city = city;
-                    currentTheatre.data.location.state= state;
-                }
+                    var city  = apiResponse.results[0].address_components[1].long_name;
+                    var state = apiResponse.results[0].address_components[2].long_name;
+                    currentTheatre.data.location.city  = city;
+                    currentTheatre.data.location.state = state;
                 
-                //Note: City and State needs to have spaces replaced with dashes.
-                api.makeRequest('theatres?state=' + state.replace(' ', '-') + '&city=' + city.replace(' ', '-'), function apiResponseCallback(err, apiResponse) {
-                    if (err) {
-                        speechOutput = textHelper.errors.apiUnavailable;
-                    } else {
-                        var theatres = apiResponse._embedded.theatres;
-                        //speechOutput += ' - ' + apiResponse._embedded.theatres[0].name + ' - ';
-
-                        currentTheatre.data.localTheatres = [];
-                        
-                        if(theatres.length < 1) {
-                            speechOutput += 'Unfortunately it doesn\'t look like there are any AMC theatres in your city. If the theatre that you visit is in another city, please set your zip code to that city.';
+                    //Note: City and State needs to have spaces replaced with dashes.
+                    api.makeRequest('theatres?state=' + state.replace(' ', '-') + '&city=' + city.replace(' ', '-'), function apiResponseCallback(err, apiResponse) {
+                        if (err) {
+                            speechOutput = textHelper.errors.amcAPIUnavailable;
+	                        cardOutput = speechOutput + ' ' + err;
                         } else {
-                            theatres.forEach(function(element) {
-                                currentTheatre.data.localTheatres.push({'id': element.id, 'name': element.name});                          
-                            }, this);
-                            if(theatres.length === 1) {
-                                currentTheatre.data.favoriteTheatre = {'id': currentTheatre.data.localTheatres[0].id, 'name': currentTheatre.data.localTheatres[0].name};
-                                speechOutput += 'I found one theatre in your city. ' + currentTheatre.data.localTheatres[0].name + '. ';
+                            var theatres = apiResponse._embedded.theatres;
+
+                            currentTheatre.data.localTheatres = [];
+                            
+                            if(theatres.length < 1) {
+                                speechOutput += textHelper.errors.theatresNotFound;
                             } else {
-                                speechOutput += 'Here are the theatres I found in your city. ';
-                                for(var i = 0, l = currentTheatre.data.localTheatres.length; i < l; i++) {
-                                    if(i == (l - 1)) {
-                                        speechOutput += 'and ' + currentTheatre.data.localTheatres[i].name + '. ';
-                                    } else {
-                                        speechOutput += currentTheatre.data.localTheatres[i].name + ', ';
+                                currentTheatre.data.location.utcOffset = theatres[0].utcOffset
+                                theatres.forEach(function(element) {
+                                    currentTheatre.data.localTheatres.push({'id': element.id, 'name': element.name});                          
+                                }, this);
+
+                                currentTheatre.data.favoriteTheatre = {'id': currentTheatre.data.localTheatres[0].id, 'name': currentTheatre.data.localTheatres[0].name};
+                                if(theatres.length === 1) {
+                                    speechOutput += 'I found one theatre in your city. ' + currentTheatre.data.localTheatres[0].name + '. It has been set as your favorite.';
+                                } else {
+                                    speechOutput += 'Here are the theatres I found in your city. The first one has been set as your favorite.';
+                                    for(var i = 0, l = currentTheatre.data.localTheatres.length; i < l; i++) {
+                                        if(i == (l - 1)) {
+                                            speechOutput += 'and ' + currentTheatre.data.localTheatres[i].name + '. ';
+                                        } else {
+                                            speechOutput += currentTheatre.data.localTheatres[i].name + ', ';
+                                        }
                                     }
                                 }
                             }
+	                        cardOutput = speechOutput;
                         }
-                    }
-                    
-                    currentTheatre.save(function () {
-                        response.tellWithCard(speechOutput, 'AMC Zip Code Request', speechOutput);
+                        
+                        currentTheatre.save(function () {
+                            response.tellWithCard(speechOutput, 'AMC Zip Code Request', cardOutput);
+                        });
                     });
-                });
+                }
+            });
+        });
+    };
+
+    /**
+     * Sets the users location based on a city and state that they've input.
+     * 
+     * An API call to Google Map's geocode API is made to get the Lat/Long
+     * of the city, which can then be used to get the Zip Code.
+     * 
+     * Once their location is found and saved. The API is called to get
+     * the theatres in their town. If there's only one theatre in their
+     * town, it's automatically set as their favorite theatre to be used
+     * as the default for showtimes.
+     * 
+     * If there's more than one theatre, the first one lsited is set as the
+     * default, until the user changes it themselves.
+     */
+    intentHandlers.SetLocationByCityStateIntent = function (intent, session, response) {
+        var city = intent.slots.city.value;
+        var state = intent.slots.state.value;
+        var speechOutput = '';
+        var cardOutput = '';
+        if (!city) {
+            response.ask('sorry, I didn\'t hear a city name, please say again?');
+            return;
+        }
+        if (!state) {
+            response.ask('sorry, I didn\'t hear a state name, please say again?');
+            return;
+        }
+
+        storage.loadTheatre(session, function (currentTheatre) {
+            helperFunctions.checkSessionVariables(currentTheatre);
+            
+            //Note: City and State needs to have spaces replaced with dashes.
+            api.fetchLocation('address=' + state.replace(' ', '-') + '&city=' + city.replace(' ', '-'), function apiResponseCallback(err, gFirstAPIResponse) {
+                if (err) {
+                    speechOutput = textHelper.errors.googleAPIUnavailable;
+                    cardOutput = speechOutput + ' ' + err;
+                } else {                    
+                    currentTheatre.data.location.city  = city;
+                    currentTheatre.data.location.state = state;
+                    var lat  = gFirstAPIResponse.results[0].geometry.location.lat;
+                    var lng = gFirstAPIResponse.results[0].geometry.location.lng;
+
+
+                    api.fetchLocation('latlng=' + lat + ',' + lng, function apiResponseCallback(err, gSecondAPIResponse) {
+                        if (err) {
+                            speechOutput = textHelper.errors.googleAPIUnavailable;
+                            cardOutput = speechOutput + ' ' + err;
+                        } else {
+                            var addressComponents = gFirstAPIResponse.results[0].address_components;
+                            for(var i = 0, len = addressComponents.length; i < len; i++) {
+                                if(addressComponents[i].types.indexOf('postal_code') > -1) {
+                                    currentTheatre.data.location.zipCode = addressComponents[i].long_name;
+                                }                                
+                            }
+
+                            //Note: City and State needs to have spaces replaced with dashes.
+                            api.makeRequest('theatres?state=' + state.replace(' ', '-') + '&city=' + city.replace(' ', '-'), function apiResponseCallback(err, apiResponse) {
+                                if (err) {
+                                    speechOutput = textHelper.errors.amcAPIUnavailable;
+                                    cardOutput = speechOutput + ' ' + err;
+                                } else {
+                                    var theatres = apiResponse._embedded.theatres;
+
+                                    currentTheatre.data.localTheatres = [];
+                                    
+                                    if(theatres.length < 1) {
+                                        speechOutput += textHelper.errors.theatresNotFound;
+                                    } else {
+                                        currentTheatre.data.location.utcOffset = theatres[0].utcOffset
+                                        theatres.forEach(function(element) {
+                                            currentTheatre.data.localTheatres.push({'id': element.id, 'name': element.name});                          
+                                        }, this);
+
+                                        currentTheatre.data.favoriteTheatre = {'id': currentTheatre.data.localTheatres[0].id, 'name': currentTheatre.data.localTheatres[0].name};
+                                        if(theatres.length === 1) {
+                                            speechOutput += 'I found one theatre in your city. ' + currentTheatre.data.localTheatres[0].name + '. It has been set as your favorite.';
+                                        } else {
+                                            speechOutput += 'Here are the theatres I found in your city. The first one has been set as your favorite.';
+                                            for(var i = 0, l = currentTheatre.data.localTheatres.length; i < l; i++) {
+                                                if(i == (l - 1)) {
+                                                    speechOutput += 'and ' + currentTheatre.data.localTheatres[i].name + '. ';
+                                                } else {
+                                                    speechOutput += currentTheatre.data.localTheatres[i].name + ', ';
+                                                }
+                                            }
+                                        }
+                                    }
+                                    cardOutput = speechoutput;
+                                }
+                                
+                                currentTheatre.save(function () {
+                                    response.tellWithCard(speechOutput, 'AMC Zip Code Request', cardOutput);
+                                });
+                            });
+                        }
+                    });
+                }
             });
         });
     };
