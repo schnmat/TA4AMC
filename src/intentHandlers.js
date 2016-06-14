@@ -14,6 +14,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
 
     /**
      * This is the intent that is launched when the user first opens the skill.
+     * 
      * If there is no data for the user, they're prompted to set their location
      * so that they can find theatres in their hometown and see movies that
      * are playing.
@@ -322,6 +323,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
     intentHandlers.NowPlayingIntent = function (intent, session, response) {
         storage.loadTheatre(session, function (currentTheatre) {
             var speechOutput = '';
+            var cardOutput = '';
             helperFunctions.checkSessionVariables(currentTheatre);
                     
             if(currentTheatre.data.favoriteTheatre.id != null && currentTheatre.data.favoriteTheatre.id > 0) {
@@ -330,7 +332,8 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 var callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + dateUtil.getTodaysDate("-05:00");
                 api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                     if (err) {
-                        speechOutput = textHelper.errors.apiUnavailable;
+                        speechOutput = textHelper.errors.amcAPIUnavailable;
+                        cardOutput = speechOutput + ' ' + err;
                     } else {
                         var movies = apiResponse._embedded.showtimes;
                         for(var i = 0, l = movies.length; i < l; i++) {
@@ -340,15 +343,17 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                 speechOutput += movies[i].movieName + ', ';
                             }
                         }
+                        cardOutput = speechOutput;
                     }
-                    response.tellWithCard(speechOutput, 'AMC Movies Now Playing', speechOutput);
+                    response.tellWithCard(speechOutput, 'AMC Movies Now Playing', cardOutput);
                 });                
             } else {
                 speechOutput += 'Now playing in a theatre near you.';
                 
                 api.makeRequest('movies/views/now-playing', function apiResponseCallback(err, apiResponse) {
                     if (err) {
-                        speechOutput = textHelper.errors.apiUnavailable;
+                        speechOutput = textHelper.errors.amcAPIUnavailable;
+                        cardOutput = speechOutput + ' ' + err;
                     } else {
                         var movies = apiResponse._embedded.movies;
                         for(var i = 0, l = movies.length; i < l; i++) {
@@ -358,8 +363,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                 speechOutput += movies[i].name + ', ';
                             }
                         }
+                        cardOutput = speechOutput;
                     }
-                    response.tellWithCard(speechOutput, 'AMC Movies Now Playing', speechOutput);
+                    response.tellWithCard(speechOutput, 'AMC Movies Now Playing', cardOutput);
                 });                                   
             }
         });
@@ -374,6 +380,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
     intentHandlers.PlayingTomorrowIntent = function (intent, session, response) {
         storage.loadTheatre(session, function (currentTheatre) {
             var speechOutput = '';
+            var cardOutput = '';
             helperFunctions.checkSessionVariables(currentTheatre);
                     
             if(currentTheatre.data.favoriteTheatre.id != null && currentTheatre.data.favoriteTheatre.id > 0) {
@@ -382,7 +389,8 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 var callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + dateUtil.getTomorrowsDate("-05:00");
                 api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                     if (err) {
-                        speechOutput = textHelper.errors.apiUnavailable;
+                        speechOutput = textHelper.errors.amcAPIUnavailable;
+                        cardOutput = speechOutput + ' ' + err;
                     } else {
                         var movies = apiResponse._embedded.showtimes;
                         for(var i = 0, l = movies.length; i < l; i++) {
@@ -392,15 +400,17 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                 speechOutput += movies[i].movieName + ', ';
                             }
                         }
+                        cardOutput = speechOutput;
                     }
-                    response.tellWithCard(speechOutput, 'AMC Movies Playing Tomorrow', speechOutput);
+                    response.tellWithCard(speechOutput, 'AMC Movies Playing Tomorrow', cardOutput);
                 });                
             } else {
                 speechOutput += 'Now playing in a theatre near you.';
                 
                 api.makeRequest('movies/views/now-playing', function apiResponseCallback(err, apiResponse) {
                     if (err) {
-                        speechOutput = textHelper.errors.apiUnavailable;
+                        speechOutput = textHelper.errors.amcAPIUnavailable;
+                        cardOutput = speechOutput + ' ' + err;
                     } else {
                         var movies = apiResponse._embedded.movies;
                         for(var i = 0, l = movies.length; i < l; i++) {
@@ -410,8 +420,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                 speechOutput += movies[i].name + ', ';
                             }
                         }
+                        cardOutput = speechOutput;
                     }
-                    response.tellWithCard(speechOutput, 'AMC Movies Playing Tomorrow', speechOutput);
+                    response.tellWithCard(speechOutput, 'AMC Movies Playing Tomorrow', cardOutput);
                 });                                   
             }
         });
@@ -426,10 +437,12 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         storage.loadTheatre(session, function (currentTheatre) {
             helperFunctions.checkSessionVariables(currentTheatre);
             var speechOutput = currentTheatre.data.favoriteTheatre.name != null ? 'Coming soon to ' + currentTheatre.data.favoriteTheatre.name +'. ' : 'Coming soon to a theatre near you.';
+            var cardOutput = '';
             
             api.makeRequest('movies/views/coming-soon', function apiResponseCallback(err, apiResponse) {
                 if (err) {
-                    speechOutput = textHelper.errors.apiUnavailable;
+                    speechOutput = textHelper.errors.amcAPIUnavailable;
+                        cardOutput = speechOutput + ' ' + err;
                 } else {
                     var movies = apiResponse._embedded.movies;
                     for(var i = 0, l = movies.length; i < l; i++) {
@@ -439,8 +452,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                             speechOutput += movies[i].name + ', ';
                         }
                     }
+                    cardOutput = speechOutput;
                 }    
-                response.tellWithCard(speechOutput, 'AMC Movies Coming Soon', speechOutput);
+                response.tellWithCard(speechOutput, 'AMC Movies Coming Soon', cardOutput);
             });
         });
     };
@@ -472,7 +486,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
 
                             if (err) {
-                                speechOutput = textHelper.errors.apiUnavailable;
+                                speechOutput = textHelper.errors.amcAPIUnavailable;
                                 cardOutput = speechOutput + ' ' + err;
                             } else {
                                 var movies = new Array();
@@ -491,7 +505,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                         }
                                     }
                                 }
-                                cardOutput = speechOutput + ' ' + callString;
+                                cardOutput = speechOutput + ' ' + new Date(movies[0].showDateTimeUtc.toString()) + ' ' + callString;
                             }
                             response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
                         });
@@ -547,7 +561,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
 
                         if (err) {
-                            speechOutput = textHelper.errors.apiUnavailable;
+                            speechOutput = textHelper.errors.amcAPIUnavailable;
                             cardOutput = speechOutput + ' ' + err;
                         } else {
                             var movies = new Array();

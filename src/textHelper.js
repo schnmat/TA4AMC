@@ -12,7 +12,9 @@ var textHelper = (function () {
         + ' and exit.',
         nextHelp: 'You can set your zip code and favorite theatre, get currently playing movies and their showtimes, or say help. What would you like?',
         errors: {
-            apiUnavailable: 'Sorry, the AMC API service is experiencing a problem. Please try again later.',
+            googleAPIUnavailable: 'Sorry, the Google geocode API service is experiencing a problem. Please try again later.',
+            amcAPIUnavailable: 'Sorry, the AMC API service is experiencing a problem. Please try again later.',
+            theatresNotFound: 'Unfortunately it doesn\'t look like there are any AMC theatres in your city. If the theatre that you regularly visit is in another city, please set your location to that city.',
             movieNotFound: 'Sorry, I couldn\'t find the movie you were looking for.'
         }
     };
