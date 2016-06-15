@@ -4,8 +4,8 @@
 var textHelper = require('./textHelper'),
     helperFunctions = require('./helperFunctions'),
     numberFunctions = require('./numberFunctions'),
+    dateUtil = require('./dateFunctions'),
     api = require('./apiHandlers'),
-    dateUtil = require('./alexaDateUtil'),
     locationFinder = require('./locationFinder'),
     storage = require('./storage');
 

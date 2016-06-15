@@ -5,7 +5,7 @@
  * Provides date and time utilities to format responses in
  * a manner appropriate for speech output.
  */
-var alexaDateUtil = (function () {
+var dateFunctions = (function () {
 
     var DAYS_OF_MONTH = [
         '1st',
@@ -90,9 +90,10 @@ var alexaDateUtil = (function () {
          * (without the time). Example Output: '06-05-2016'
          */
         getFormattedDate: function (date, seperator) {
-            var seperator = typeof seperator !== 'undefined' ?  seperator : '-';
-            var dd = date.getDate();
-            var mm = date.getMonth() + 1; // Write January as one instead of zero.
+            var date      = date instanceof Date ? date : new Date();
+            var seperator = typeof seperator !== 'undefined' ? seperator : '-';
+            var dd = date.getDate(),
+                mm = date.getMonth() + 1; // Write January as one instead of zero.
 
             // Append zeros for all days before the tenth.
             dd < 10 ? dd = '0' + dd : dd;
@@ -107,8 +108,9 @@ var alexaDateUtil = (function () {
          * '12:35 in the afternoon'
          */
         getFormattedTime: function (date) {
-            var hours = date.getHours();
-            var minutes = date.getMinutes();
+            var date = date instanceof Date ? date : new Date();
+            var hours = date.getHours(),
+                minutes = date.getMinutes();
 
             var periodOfDay;
             if (hours < 12) {
@@ -133,8 +135,9 @@ var alexaDateUtil = (function () {
          * '12:35 pm'
          */
         getFormattedTimeAmPm: function (date) {
-            var hours = date.getHours();
-            var minutes = date.getMinutes();
+            var date = date instanceof Date ? date : new Date();
+            var hours = date.getHours(),
+            	minutes = date.getMinutes();
             var ampm = hours >= 12 ? 'PM' : 'AM';
 
             hours = hours % 12;
@@ -144,8 +147,14 @@ var alexaDateUtil = (function () {
             return formattedTime;
         },
 
-        getLocalDate: function(utcOffset) {
-            var date = new Date();
+        /**
+         * Takes the utcOffset value to get the local date from the
+         * date retrieved from the server.
+         */
+        getLocalDate: function(utcOffset, date) {
+            var utcOffset   = typeof utcOffset !== 'undefined' ? utcOffset : '0.00';
+            var date        = date instanceof Date ? date : new Date();
+
             // convert to msec
             // subtract local time zone offset
             // get UTC time in msec
@@ -153,7 +162,7 @@ var alexaDateUtil = (function () {
 
             // create new Date object for different city
             // using supplied offset
-            return new Date(utc + (3600000 * utcOffset.replace(':','.')));
+            return new Date(utc + (3600000 * utcOffset));
         },
 
         /**
@@ -172,14 +181,22 @@ var alexaDateUtil = (function () {
         },
 
         /**
+         * Returns the current time formatted with the
+         * getFormattedTimeAmPm method.
+         */
+        getCurrentTime: function(utcOffset) {
+            return this.getFormattedTimeAmPm(this.getLocalDate(utcOffset));
+        },
+
+        /**
          * Fetches the next occurrence of a date by weekday name (e.g. Monday).
          * Returns a formatted date in the default format, which can be used
          * in an api call (e.g. 06-06-2016)
          */
         getDayFromString: function(weekday) {
-            var today = new Date();
-            var tomorrow = new Date();
-            var nextDay = new Date();
+            var today = new Date(),
+                tomorrow = new Date(),
+            	nextDay = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             nextDay.setDate(nextDay.getDate() + 1);
             var found = 0;
@@ -201,11 +218,11 @@ var alexaDateUtil = (function () {
                 }
             }
             if(nextDay === -1) {
-                throw new TypeError('Couldn\'t find the next occurrence of the day: ' + weekday, 'alexaDateUtil.js', 186);
+                throw new TypeError('Couldn\'t find the next occurrence of the day: ' + weekday, 'dateFunctions.js', 186);
             } else {
                 return this.getFormattedDate(nextDay);
             }
         }
     }
 })();
-module.exports = alexaDateUtil;
+module.exports = dateFunctions;
