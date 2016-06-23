@@ -62,6 +62,23 @@ var helperFunctions = (function () {
         },
 
         /**
+         * Takes a movies attributes array and checks for the value of 'REALD3D'
+         * that designates when a movie is 3-D or not.
+         */
+        isMovieThreeDee: function(attributes) {
+            var isThreeDee = false;
+
+            attributes.forEach(function(attr) {
+                if(attr.code == 'REALD3D') {
+                    isThreeDee = true;
+                    break;
+                }
+            }, this);
+            
+            return isThreeDee;
+        },
+
+        /**
          * Functions Used together to replace all instances of a character
          * found inside of a string.
          */
@@ -70,6 +87,13 @@ var helperFunctions = (function () {
         },
         replaceAll: function(str, find, replace) {
            return str.replace(new RegExp(this.escapeRegExp(find), 'g'), replace);
+        },
+        /**
+         * Replace the last instance of a character in a string.
+         */
+        replaceLast: function(str, find, replace) {
+            var pos = str.lastIndexOf(find);
+            return str.substring(0, pos) + replace + str.substring(pos + 1);
         }
     }
 })();

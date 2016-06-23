@@ -33,13 +33,10 @@ ListLocalTheatresIntent what theatres are here
 
 NowPlayingIntent What is playing right now
 NowPlayingIntent What movies are playing right now
-
-PlayingTomorrowIntent What is playing tomorrow
-PlayingTomorrowIntent What movies are playing tomorrow
-
-PlayingOnDayIntent What is playing on {weekday}
-PlayingOnDayIntent What movies are playing on {weekday}
-PlayingOnDayIntent What movies are playing next {weekday}
+NowPlayingIntent What is playing {weekday}
+NowPlayingIntent What is playing on {weekday}
+NowPlayingIntent What movies are playing on {weekday}
+NowPlayingIntent What movies are playing next {weekday}
 
 ComingSoonIntent What is coming soon
 ComingSoonIntent What movies are coming soon
@@ -56,9 +53,15 @@ GetMovieDetailsIntent More about {batman|movieName}
 GetMovieDetailsIntent What about {batman|movieName}
 GetMovieDetailsIntent What is {batman|movieName} about
 
-GetMovieShowtimesIntent What time is {batman|movieName} playing
-GetMovieShowtimesIntent What time is {the conjuring|movieName} playing
-GetMovieShowtimesIntent What time is {the conjuring two|movieName} playing
-GetMovieShowtimesIntent When is {batman|movieName} playing
-GetMovieShowtimesIntent When is {the conjuring|movieName} playing
-GetMovieShowtimesIntent When is {the conjuring two|movieName} playing
+GetMovieShowtimesIntent What time is {batman|movieName} playing {weekday}
+GetMovieShowtimesIntent What time is {the conjuring|movieName} playing {weekday}
+GetMovieShowtimesIntent What time is {the conjuring two|movieName} playing {weekday}
+GetMovieShowtimesIntent When is {batman|movieName} playing {weekday}
+GetMovieShowtimesIntent When is {the conjuring|movieName} playing {weekday}
+GetMovieShowtimesIntent When is {the conjuring two|movieName} playing {weekday}
+GetMovieShowtimesIntent What time is {batman|movieName} playing on {weekday}
+GetMovieShowtimesIntent What time is {the conjuring|movieName} playing on {weekday}
+GetMovieShowtimesIntent What time is {the conjuring two|movieName} playing on {weekday}
+GetMovieShowtimesIntent When is {batman|movieName} playing on {weekday}
+GetMovieShowtimesIntent When is {the conjuring|movieName} playing on {weekday}
+GetMovieShowtimesIntent When is {the conjuring two|movieName} playing on {weekday}

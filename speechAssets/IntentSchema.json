@@ -10,6 +10,12 @@
         }
       ]
     },
+
+    {
+      "intent": "GetSavedZipCodeIntent",
+      "slots": []
+    },
+
     {
       "intent": "SetLocationByCityStateIntent",
       "slots": [
@@ -23,8 +29,9 @@
         }
       ]
     },
+
     {
-      "intent": "GetZipCodeIntent",
+      "intent": "GetSavedLocationIntent",
       "slots": []
     },
 
@@ -37,10 +44,12 @@
         }
       ]
     },
+
     {
       "intent": "GetFavoriteTheatreIntent",
       "slots": []
     },
+
     {
       "intent": "ListLocalTheatresIntent",
       "slots": []
@@ -48,18 +57,6 @@
 
     {
       "intent": "NowPlayingIntent",
-      "slots": []
-    },
-    {
-      "intent": "ComingSoonIntent",
-      "slots": []
-    },
-    {
-      "intent": "PlayingTomorrowIntent",
-      "slots": []
-    },
-    {
-      "intent": "PlayingOnDayIntent",
       "slots": [
         {
       		"name": "weekday",
@@ -67,12 +64,22 @@
         }
       ]
     },
+
+    {
+      "intent": "ComingSoonIntent",
+      "slots": []
+    },
+
     {
       "intent": "GetMovieShowtimesIntent",
       "slots": [
         {
       		"name": "movieName",
       		"type": "AMAZON.LITERAL"
+        },
+        {
+      		"name": "weekday",
+      		"type": "WEEKDAY"
         }
       ]
     },

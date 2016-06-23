@@ -15,7 +15,8 @@ var textHelper = (function () {
             googleAPIUnavailable: 'Sorry, the Google geocode API service is experiencing a problem. Please try again later.',
             amcAPIUnavailable: 'Sorry, the AMC API service is experiencing a problem. Please try again later.',
             theatresNotFound: 'Unfortunately it doesn\'t look like there are any AMC theatres in your city. If the theatre that you regularly visit is in another city, please set your location to that city.',
-            movieNotFound: 'Sorry, I couldn\'t find the movie you were looking for.'
+            movieNotFound: 'Sorry, I couldn\'t find the movie you were looking for.',
+            noShowtimesFound: 'Sorry, but no showtimes have been found for that theatre and date. Try selecting a different date or theatre.'
         }
     };
 })();

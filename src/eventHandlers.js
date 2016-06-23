@@ -22,8 +22,8 @@ var registerEventHandlers = function (eventHandlers, skillContext) {
             helperFunctions.checkSessionVariables(currentTheatre);
                 
             if (currentTheatre.data.location.zipCode < 1) {
-                speechOutput += 'Welcome to AMC Theatres, Please tell me your zip code.';
-                reprompt = "Please tell me your zip code so that I can find showtimes for your local theatres.";
+                speechOutput += 'Welcome to AMC Theatres, Please tell me your location.';
+                reprompt = 'Please tell me your location, either by city and state, or by zip code, so that I can find showtimes in your local theatre.';
             } else if (currentTheatre.data.favoriteTheatre.id < 1) {
                 speechOutput += 'Welcome to AMC Theatres, I don\'t have a theatre set as your favorite yet.';
                 reprompt = textHelper.completeHelp;

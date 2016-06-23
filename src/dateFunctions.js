@@ -193,35 +193,71 @@ var dateFunctions = (function () {
          * Returns a formatted date in the default format, which can be used
          * in an api call (e.g. 06-06-2016)
          */
-        getDayFromString: function(weekday) {
-            var today = new Date(),
-                tomorrow = new Date(),
-            	nextDay = new Date();
+        getDayFromString: function(weekday, utcOffset) {
+            var today = this.getLocalDate(utcOffset, new Date()),
+                tomorrow = this.getLocalDate(utcOffset, new Date()),
+            	nextDay = this.getLocalDate(utcOffset, new Date());
             tomorrow.setDate(tomorrow.getDate() + 1);
             nextDay.setDate(nextDay.getDate() + 1);
             var found = 0;
-            
-            while(found === 0) {
-                var dayFound = DAYS_OF_WEEK[nextDay.getDay()].toLowerCase();
-                if(dayFound == weekday.toLowerCase()) {
-                    found = 1;
-                    break;
-                } else {
-                    nextDay.setDate(nextDay.getdate() + 1);
-                }
 
-                // If it's looped around the whole week, something went wrong
-                // (perhaps the input was mis-spelled.).
-                if(DAYS_OF_WEEK[nextDay.getDay()] == DAYS_OF_WEEK[tomorrow.getDay()]) {
-                found = -1;
-                nextDay = -1; // Return an error.
+            if(weekday.toLowerCase() == 'today') {
+                return this.getFormattedDate(today);
+            } else if(weekday.toLowerCase() == 'tomorrow') {
+                return this.getFormattedDate(nextDay);
+            } else {
+
+                while(found === 0) {
+                    var dayFound = DAYS_OF_WEEK[nextDay.getDay()].toLowerCase();
+                    if(dayFound == weekday.toLowerCase()) {
+                        found = 1;
+                        break;
+                    } else {
+                        nextDay.setDate(nextDay.getDate() + 1);
+                    }
+
+                    // If it's looped around the whole week, something went wrong
+                    // (perhaps the input was mis-spelled.).
+                    if(DAYS_OF_WEEK[nextDay.getDay()] == DAYS_OF_WEEK[tomorrow.getDay()]) {
+                        found = -1;
+                        nextDay = -1; // Return an error.
+                    }
+                }
+                if(nextDay === -1) {
+                    throw new TypeError('Couldn\'t find the next occurrence of the day: ' + weekday, 'dateFunctions.js', 186);
+                } else {
+                    return this.getFormattedDate(nextDay);
                 }
             }
-            if(nextDay === -1) {
-                throw new TypeError('Couldn\'t find the next occurrence of the day: ' + weekday, 'dateFunctions.js', 186);
-            } else {
-                return this.getFormattedDate(nextDay);
+        },
+
+        /**
+         * Checks a date to verify that it occurs after the current time.
+         * Returns -1 if it's before, 0 if it's equal to, and 1 if it's after.
+         */
+        afterCurrentTime: function (utcOffset, date) {
+            if(!date instanceof Date) { return -1; }
+            var day = date.getDate(),
+                hours = date.getHours(),
+                minutes = date.getMinutes(),
+                currentDate = this.getLocalDate(utcOffset, new Date()),
+                curDay = currentDate.getDate(),
+                curHours = currentDate.getHours(),
+                curMinutes = currentDate.getMinutes();
+
+            if(day > curDay) {
+                return 1;
+            } else if(day == curDay) {
+                if(	hours == curHours &&
+                    minutes == curMinutes ) {
+                    return 0;
+                } else if(	hours >= curHours &&
+                            minutes > curMinutes ) {
+                    return 1;
+                }
             }
+
+            return -1;
         }
     }
 })();
