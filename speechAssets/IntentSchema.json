@@ -51,6 +51,16 @@
     },
 
     {
+      "intent": "GetPhoneNumberForTheatreIntent",
+      "slots": [
+        {
+        "name": "theatreName",
+        "type": "AMAZON.LITERAL"
+        }
+      ]
+    },
+
+    {
       "intent": "ListLocalTheatresIntent",
       "slots": []
     },

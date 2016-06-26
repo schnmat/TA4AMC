@@ -71,7 +71,6 @@ var helperFunctions = (function () {
             attributes.forEach(function(attr) {
                 if(attr.code == 'REALD3D') {
                     isThreeDee = true;
-                    break;
                 }
             }, this);
             

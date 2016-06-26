@@ -24,6 +24,9 @@ GetFavoriteTheatreIntent what is my preferred theatre
 GetFavoriteTheatreIntent what is my favorite theatre
 GetFavoriteTheatreIntent what is my saved theatre
 
+GetPhoneNumberForTheatreIntent what is the phone number for {theatreName}
+GetPhoneNumberForTheatreIntent give me the phone number for {theatreName}
+
 ListLocalTheatresIntent what theatres are in my area
 ListLocalTheatresIntent what theatres are in my hometown
 ListLocalTheatresIntent what theatres are near me

@@ -243,31 +243,32 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
     intentHandlers.SetFavoriteTheatreIntent = function (intent, session, response) {
         var favoriteTheatreSlot = intent.slots.favoriteTheatre,
             favoriteTheatre = '';
+        
         if (!favoriteTheatreSlot || !favoriteTheatreSlot.value) {
             response.ask('sorry, I didn\'t hear you say a theatre, please say again?');
             return;
-        } else {
-            favoriteTheatre = favoriteTheatreSlot.value;
-        
-            storage.loadTheatre(session, function (currentTheatre) {
-                var speechOutput = 'I\'m sorry, I couldn\'t find any theatres with that name.';
-                helperUtil.checkSessionVariables(currentTheatre);
-                
-                // Loop through the theatres saved locally to find the theatre with the same name.
-                currentTheatre.data.localTheatres.forEach(function(element) {
-                    favoriteTheatre = numberUtil.parseNumbersInString(favoriteTheatre);
-                    var checkName = element.name.replace('AMC ', '').toLowerCase();
-                    if(element.name.toLowerCase() == favoriteTheatre.toLowerCase() || checkName == favoriteTheatre.toLowerCase()) {
-                        currentTheatre.data.favoriteTheatre = {'id':element.id,'name':element.name};            
-                        speechOutput = 'Thank you, saving your favorite theatre, ' + element.name + '. ';
-                    }
-                }, this);
-
-                currentTheatre.save(function () {
-                    response.tellWithCard(speechOutput, 'AMC Favorite Theatre Request', speechOutput);
-                });
-            });
         }
+
+        favoriteTheatre = favoriteTheatreSlot.value;
+    
+        storage.loadTheatre(session, function (currentTheatre) {
+            var speechOutput = 'I\'m sorry, I couldn\'t find any theatres with that name.';
+            helperUtil.checkSessionVariables(currentTheatre);
+            
+            // Loop through the theatres saved locally to find the theatre with the same name.
+            currentTheatre.data.localTheatres.forEach(function(element) {
+                favoriteTheatre = numberUtil.parseNumbersInString(favoriteTheatre);
+                var checkName = element.name.replace('AMC ', '').toLowerCase();
+                if(element.name.toLowerCase() == favoriteTheatre.toLowerCase() || checkName == favoriteTheatre.toLowerCase()) {
+                    currentTheatre.data.favoriteTheatre = {'id':element.id,'name':element.name};            
+                    speechOutput = 'Thank you, saving your favorite theatre, ' + element.name + '. ';
+                }
+            }, this);
+
+            currentTheatre.save(function () {
+                response.tellWithCard(speechOutput, 'AMC Favorite Theatre Request', speechOutput);
+            });
+        });
     };
     
     /**
@@ -316,42 +317,42 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * Returns the phone number for a theatre.
      */
     intentHandlers.GetPhoneNumberForTheatreIntent = function (intent, session, response) {
-        var theatreSlot = intent.slots.favoriteTheatre,
-            foundTheatre = {id: 0, name: ''};
-        if (!theatreSlot || !theatreSlot.value) {
-            response.ask('sorry, I didn\'t hear you say a theatre, please say again?');
-            return;
-        } else {
-        
-            storage.loadTheatre(session, function (currentTheatre) {
-                var speechOutput = 'I\'m sorry, I couldn\'t find any theatres with that name.',
-            	cardOutput = '';
-                helperUtil.checkSessionVariables(currentTheatre);
+        storage.loadTheatre(session, function (currentTheatre) {
+            helperUtil.checkSessionVariables(currentTheatre);
+            var speechOutput = '',
+                cardOutput = '',
+                theatreNameSlot = intent.slots.theatreName,
+                theatreID = currentTheatre.data.favoriteTheatre.id || 0,
+                theatreName = currentTheatre.data.favoriteTheatre.id || 0;
 
+            if (theatreNameSlot && theatreNameSlot.value) {
+                //Get theatre with name:
                 // Loop through the theatres saved locally to find the theatre with the same name.
-                currentTheatre.data.localTheatres.forEach(function(theatre) {
-                    favoriteTheatre = numberUtil.parseNumbersInString(favoriteTheatre);
-                    var checkName = theatre.name.replace('AMC ', '').toLowerCase();
-                    if(theatre.name.toLowerCase() == theatreSlot.value.toLowerCase() ||
-                                        checkName == theatreSlot.value.toLowerCase()) {
-                        foundTheatre = {'id':element.id,'name':element.name};            
+                currentTheatre.data.localTheatres.forEach(function(element) {
+                    theatreName = numberUtil.parseNumbersInString(theatreNameSlot.value);
+                    var checkName = element.name.replace('AMC ', '').toLowerCase();
+                    if(element.name.toLowerCase() == theatreName.toLowerCase() ||
+                                        checkName == theatreName.toLowerCase()) {
+                        theatreID = element.id;
                     }
                 }, this);
+            }
 
-                var callString = 'theatres/' + foundTheatre.id;
-                console.log('API Call: ' + callString);
-                api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
-                    if (err) {
-                        speechOutput = textHelper.errors.amcAPIUnavailable;
-                        cardOutput = speechOutput + ' ' + err;
-                    } else {
-                        speechOutput = 'The phone number for ' + foundTheatre.name + ' is ' + apiResponse.guestServicesPhoneNumber + '. ';
-                        cardOutput = speechOutput;
-                    }
-                    response.tellWithCard(speechOutput, 'AMC Theatres Near You', cardOutput);
-                });
+            speechOutput += 'The phone number for ' + theatreName + ' is: ';
+            
+            var callString = 'theatres/' + theatreID;
+            console.log('API Call: ' + callString);
+            api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                if (err) {
+                    speechOutput = textHelper.errors.amcAPIUnavailable;
+                    cardOutput = speechOutput + ' ' + err;
+                } else {
+                    speechOutput += apiResponse.guestServicesPhoneNumber + '.';
+                    cardOutput = speechOutput;
+                }
+                response.tellWithCard(speechOutput, 'AMC Theatre Phone Number', cardOutput);
             });
-        }
+        });
     };
     
     /**
