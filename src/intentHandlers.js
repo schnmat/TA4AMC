@@ -354,6 +354,52 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             });
         });
     };
+
+    /**
+     * Returns the address for a theatre, and a link to the directions in the card.
+     */
+    intentHandlers.GetAddressOfTheatreIntent = function (intent, session, response) {
+        storage.loadTheatre(session, function (currentTheatre) {
+            helperUtil.checkSessionVariables(currentTheatre);
+            var speechOutput = '',
+                cardOutput = '',
+                theatreNameSlot = intent.slots.theatreName,
+                theatreID = currentTheatre.data.favoriteTheatre.id || 0,
+                theatreName = currentTheatre.data.favoriteTheatre.id || 0;
+
+            if (theatreNameSlot && theatreNameSlot.value) {
+                //Get theatre with name:
+                // Loop through the theatres saved locally to find the theatre with the same name.
+                currentTheatre.data.localTheatres.forEach(function(element) {
+                    theatreName = numberUtil.parseNumbersInString(theatreNameSlot.value);
+                    var checkName = element.name.replace('AMC ', '').toLowerCase();
+                    if(element.name.toLowerCase() == theatreName.toLowerCase() ||
+                                        checkName == theatreName.toLowerCase()) {
+                        theatreID = element.id;
+                    }
+                }, this);
+            }
+
+            speechOutput += 'The address for ' + theatreName + ' is: ';
+            
+            var callString = 'theatres/' + theatreID;
+            console.log('API Call: ' + callString);
+            api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                if (err) {
+                    speechOutput = textHelper.errors.amcAPIUnavailable;
+                    cardOutput = speechOutput + ' ' + err;
+                } else {
+                    speechOutput += apiResponse.location.addressLine1 + ', ';
+                    speechOutput += apiResponse.location.cityUrlSuffixText + ', ';
+                    speechOutput += apiResponse.location.stateUrlSuffixText + '.';
+                    cardOutput = speechOutput;
+                    speechOutput += ' See the card for a link to get directions.';
+                    cardOutput += ' Directions ' + apiResponse.location.directionsUrl + '.';
+                }
+                response.tellWithCard(speechOutput, 'AMC Theatre Address', cardOutput);
+            });
+        });
+    };
     
     /**
      * Get a list of movies that are playing at their favorite theatre today.
