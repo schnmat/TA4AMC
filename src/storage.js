@@ -1,7 +1,8 @@
 // Alexa SDK for JavaScript v1.0.00
 // Copyright (c) 2014-2015 Amazon.com, Inc. or its affiliates. All Rights Reserved. Use is subject to license terms.
 'use strict';
-var AWS = require("aws-sdk");
+var AWS = require("aws-sdk"),
+    helperUtil = require('./helperFunctions');
 
 var storage = (function () {
     var dynamodb = new AWS.DynamoDB({apiVersion: '2012-08-10'});
@@ -11,12 +12,17 @@ var storage = (function () {
      */
     function Theatre(session, data) {
         if (data) {
+            helperUtil.checkSessionVariables(data); // Verify all properties exist
             this.data = data;
         } else {
             this.data = {
-                localTheatres: [],
-                location: {},
-                favoriteTheatre: {}
+                localTheatres: new Array(),
+                location: { 'zipCode': 0,
+                            'city': null,
+                            'state': null,
+                            'utcOffset': '-5:00' },
+                favoriteTheatre: { 'id': 0,
+                                   'name': null }
             };
         }
         this._session = session;
@@ -55,6 +61,7 @@ var storage = (function () {
                 callback(new Theatre(session, session.attributes.currentTheatre));
                 return;
             }
+            
             dynamodb.getItem({
                 TableName: 'AMCUserData',
                 Key: {

@@ -13,34 +13,35 @@ var helperFunctions = (function () {
          * Checks the local session variables to make sure they have
          * the correct properties set, and sets them to default values if needed.
          */
-        checkSessionVariables: function(currentTheatre) {
-            //Check if the dynamoDB properties exist, if not, create them:
-            if(!currentTheatre.data.hasOwnProperty('localTheatres')) {
-                currentTheatre.data.localTheatres = [];
+        checkSessionVariables: function(data) {
+            if(!data.hasOwnProperty('localTheatres')) {
+                data.localTheatres = new Array;
             }
-            if(!currentTheatre.data.hasOwnProperty('location')) {
-                currentTheatre.data.location = {};
+
+            if(!data.hasOwnProperty('location')) {
+                data.location = {};
             }
-            if(!currentTheatre.data.hasOwnProperty('favoriteTheatre')) {
-                currentTheatre.data.favoriteTheatre = {};
+            if(!data.location.hasOwnProperty('zipCode')) {
+                data.location.zipCode = 0;
             }
-            if(!currentTheatre.data.location.hasOwnProperty('zipCode')) {
-                currentTheatre.data.location.zipCode = 0;
+            if(!data.location.hasOwnProperty('city')) {
+                data.location.city = null;
             }
-            if(!currentTheatre.data.location.hasOwnProperty('city')) {
-                currentTheatre.data.location.city = null;
+            if(!data.location.hasOwnProperty('state')) {
+                data.location.state = null;
             }
-            if(!currentTheatre.data.location.hasOwnProperty('state')) {
-                currentTheatre.data.location.state = null;
+            if(!data.location.hasOwnProperty('utcOffset')) {
+                data.location.utcOffset = '-5:00';
             }
-            if(!currentTheatre.data.location.hasOwnProperty('utcOffset')) {
-                currentTheatre.data.location.utcOffset = null;
+
+            if(!data.hasOwnProperty('favoriteTheatre')) {
+                data.favoriteTheatre = {};
             }
-            if(!currentTheatre.data.favoriteTheatre.hasOwnProperty('id')) {
-                currentTheatre.data.favoriteTheatre.id = 0;
+            if(!data.favoriteTheatre.hasOwnProperty('id')) {
+                data.favoriteTheatre.id = 0;
             }
-            if(!currentTheatre.data.favoriteTheatre.hasOwnProperty('name')) {
-                currentTheatre.data.favoriteTheatre.name = null;
+            if(!data.favoriteTheatre.hasOwnProperty('name')) {
+                data.favoriteTheatre.name = null;
             }
         },
         

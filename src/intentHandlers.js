@@ -9,7 +9,44 @@ var textHelper = require('./textHelper'),
     storage = require('./storage');
 
 var registerIntentHandlers = function (intentHandlers, skillContext) {
-    
+/**
+ * Format:
+ * 
+ * intentHandlers.INTENT_NAME = function (intent, session, response) {
+ *  var speechOutput = '',
+ *     	cardOutput = '',
+ *      callString = '',
+ *      SLOT_NAME = intent.slots.INTENT_SLOT; // initialize variables needed here.
+ * 
+ *  // Check input slots for values:
+ *  if(!SLOT_NAME || !SLOT_NAME.value) {
+ *      // Handle case if the slot isn't set.
+ *      response.ask(QUESTION_TEXT);
+ *      return;
+ *  }
+ *  
+ *  storage.loadTheatre(session, function (currentTheatre) { // Load session data
+ *      // Set API call string:
+ *      callString = 'api/url/parameters';
+ *      console.log('API Call: ' + callString); // Track api calls made in case a bad URL is made.
+ * 
+ *      api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+ *          if (err) { // Return error message.
+ *              speechOutput = textHelper.errors.amcAPIUnavailable;
+ *              cardOutput = speechOutput + ' ' + err;
+ *          } else {
+ *              // Success.
+ *              cardOutput = speechOutput;
+ *          }
+ * 
+ *          // Return response:
+ *          response.tellWithCard(speechOutput, 'CARD TITLE', cardOutput);
+ *      
+ *      }); //End API
+ *  }); //End Session Load
+ * }; //End Intent
+ * 
+ */    
 
     /**
      * This is the intent that is launched when the user first opens the skill.
@@ -18,7 +55,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * so that they can find theatres in their hometown and see movies that
      * are playing.
      */
-    intentHandlers.NewTheatreIntent = function (intent, session, response) {
+    /*intentHandlers.NewTheatreIntent = function (intent, session, response) {
         storage.loadTheatre(session, function (currentTheatre) {
             if (currentTheatre.data.players.length === 0) {
                 response.ask('Welcome to AMC Theatres. What is your location?',
@@ -38,7 +75,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 }
             });
         });
-    };
+    };*/
 
     /**
      * Sets the users location based on a zip code that they've input.
@@ -53,9 +90,15 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      */
     intentHandlers.SetLocationByZipCodeIntent = function (intent, session, response) {
         //give a player points, ask additional question if slot values are missing.
-        var zipCodeSlot = intent.slots.zipCode,
-            speechOutput = '',
-        	cardOutput = '';
+        var speechOutput = '',
+        	cardOutput = ''
+            callString = '',
+            zipCodeSlot = intent.slots.zipCode,
+            zipCode = 0,
+            city = '',
+            state = '',
+            theatres = new Array();
+
         if (!zipCodeSlot || !zipCodeSlot.value) {
             response.ask('sorry, I did not hear your zip code, please say again?');
             return;
@@ -68,8 +111,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         }
  
         storage.loadTheatre(session, function (currentTheatre) {
-            helperUtil.checkSessionVariables(currentTheatre);
-            
+
             currentTheatre.data.location.zipCode = zipCode;
             speechOutput += 'Thank you, saving zip code, ' + zipCode + '. ';
 
@@ -78,22 +120,22 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     speechOutput = textHelper.errors.googleAPIUnavailable;
 	                cardOutput = speechOutput + ' ' + err;
                 } else {
-                    var city  = apiResponse.results[0].address_components[1].long_name;
-                    var state = apiResponse.results[0].address_components[2].long_name;
+                    city  = apiResponse.results[0].address_components[1].long_name;
+                    state = apiResponse.results[0].address_components[2].long_name;
                     currentTheatre.data.location.city  = city;
                     currentTheatre.data.location.state = state;
                 
                     //Note: City and State needs to have spaces replaced with dashes.
-                    var callString = 'theatres?state=' + state.replace(' ', '-') + '&city=' + city.replace(' ', '-');
+                    callString = 'theatres?state=' + state.replace(' ', '-') + '&city=' + city.replace(' ', '-');
                     console.log('API Call: ' + callString);
                     api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                         if (err) {
                             speechOutput = textHelper.errors.amcAPIUnavailable;
 	                        cardOutput = speechOutput + ' ' + err;
                         } else {
-                            var theatres = apiResponse._embedded.theatres;
+                            theatres = apiResponse._embedded.theatres;
 
-                            currentTheatre.data.localTheatres = [];
+                            currentTheatre.data.localTheatres = new Array();
                             
                             if(theatres.length < 1) {
                                 speechOutput += textHelper.errors.theatresNotFound;
@@ -135,10 +177,12 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      */
     intentHandlers.GetSavedZipCodeIntent = function (intent, session, response) {
         storage.loadTheatre(session, function (currentTheatre) {
-            var speechOutput = '';
-            helperUtil.checkSessionVariables(currentTheatre);
+            var speechOutput = 'The zip code that I have saved is, ' + currentTheatre.data.location.zipCode +'.';
 
-            speechOutput += 'The zip code that I have saved is, ' + currentTheatre.data.location.zipCode +'.';
+            if(currentTheatre.data.location.zipCode == 0) {
+                speechOutput = 'I have no zip code saved.';
+            }
+
             response.tellWithCard(speechOutput, 'AMC Zip Code Request', speechOutput);
         });
     };
@@ -158,10 +202,13 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * default, until the user changes it themselves.
      */
     intentHandlers.SetLocationByCityStateIntent = function (intent, session, response) {
-        var citySlot = intent.slots.city,
+        var speechOutput = '',
+        	cardOutput = '',
+            callString = '',
+            citySlot = intent.slots.city,
         	stateSlot = intent.slots.state,
-        	speechOutput = '',
-        	cardOutput = '';
+            theatres = new Array();
+
         if (!citySlot || !citySlot.value) {
             response.ask('sorry, I didn\'t hear a city name, please say again?');
             return;
@@ -172,18 +219,17 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         }
 
         storage.loadTheatre(session, function (currentTheatre) {
-            helperUtil.checkSessionVariables(currentTheatre);
 
             //Note: City and State needs to have spaces replaced with dashes.
-            var callString = 'theatres?state=' + stateSlot.value.replace(' ', '-') + '&city=' + citySlot.value.replace(' ', '-');
+            callString = 'theatres?state=' + stateSlot.value.replace(' ', '-') + '&city=' + citySlot.value.replace(' ', '-');
             console.log('API Call: ' + callString);
             api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                 if (err) {
                     speechOutput = textHelper.errors.amcAPIUnavailable;
                     cardOutput = speechOutput + ' ' + err;
                 } else {
-                    var theatres = apiResponse._embedded.theatres;
-                    currentTheatre.data.localTheatres = []; // Load the theatres into an array
+                    theatres = apiResponse._embedded.theatres;
+                    currentTheatre.data.localTheatres = new Array(); // Load the theatres into an array
                     
                     if(theatres.length < 1) {
                         speechOutput += textHelper.errors.theatresNotFound;
@@ -227,11 +273,21 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * to check and make sure that it's correct.
      */
     intentHandlers.GetSavedLocationIntent = function (intent, session, response) {
-        storage.loadTheatre(session, function (currentTheatre) {
-            var speechOutput = '';
-            helperUtil.checkSessionVariables(currentTheatre);
+        var speechOutput = '';
 
-            speechOutput += 'The location that I have saved is, ' + currentTheatre.data.location.city +', ' + currentTheatre.data.location.state + '.';
+        storage.loadTheatre(session, function (currentTheatre) {
+            speechOutput = 'The location that I have saved is, ' + currentTheatre.data.location.city +', ' + currentTheatre.data.location.state + '.';
+
+            if(!currentTheatre.data.location.city && !currentTheatre.data.location.state) {
+                speechOutput = 'I have no city or state saved.';
+            }
+            else if(!currentTheatre.data.location.city) {
+                speechOutput = 'I have no city saved. I have your state saved as: ' + currentTheatre.data.location.state;
+            }
+            else if(!currentTheatre.data.location.state) {
+                speechOutput = 'I have no state saved. I have your city saved as: ' + currentTheatre.data.location.city;
+            }
+
             response.tellWithCard(speechOutput, 'AMC Location Request', speechOutput);
         });
     };
@@ -241,24 +297,23 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * and saves it as the favorite to be used by default for showtimes.
      */
     intentHandlers.SetFavoriteTheatreIntent = function (intent, session, response) {
-        var favoriteTheatreSlot = intent.slots.favoriteTheatre,
-            favoriteTheatre = '';
+        var speechOutput = 'I\'m sorry, I couldn\'t find any theatres with that name.',
+            favoriteTheatreSlot = intent.slots.favoriteTheatre,
+            favoriteTheatre = '',
+            checkName = '';
         
         if (!favoriteTheatreSlot || !favoriteTheatreSlot.value) {
             response.ask('sorry, I didn\'t hear you say a theatre, please say again?');
             return;
         }
-
         favoriteTheatre = favoriteTheatreSlot.value;
     
         storage.loadTheatre(session, function (currentTheatre) {
-            var speechOutput = 'I\'m sorry, I couldn\'t find any theatres with that name.';
-            helperUtil.checkSessionVariables(currentTheatre);
             
             // Loop through the theatres saved locally to find the theatre with the same name.
             currentTheatre.data.localTheatres.forEach(function(element) {
                 favoriteTheatre = numberUtil.parseNumbersInString(favoriteTheatre);
-                var checkName = element.name.replace('AMC ', '').toLowerCase();
+                checkName = element.name.replace('AMC ', '').toLowerCase();
                 if(element.name.toLowerCase() == favoriteTheatre.toLowerCase() || checkName == favoriteTheatre.toLowerCase()) {
                     currentTheatre.data.favoriteTheatre = {'id':element.id,'name':element.name};            
                     speechOutput = 'Thank you, saving your favorite theatre, ' + element.name + '. ';
@@ -276,11 +331,15 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * as their favorite theatre to check and make sure that it's correct.
      */
     intentHandlers.GetFavoriteTheatreIntent = function (intent, session, response) {
+        var speechOutput = '';
+        
         storage.loadTheatre(session, function (currentTheatre) {
-            var speechOutput = '';
-            helperUtil.checkSessionVariables(currentTheatre);
+            speechOutput = 'The theatre that I have saved as your favorite is, ' + currentTheatre.data.favoriteTheatre.name +'.';
 
-            speechOutput += 'The theatre that I have saved as your favorite is, ' + currentTheatre.data.favoriteTheatre.name +'.';
+            if(!currentTheatre.data.favoriteTheatre.name) {
+                speechOutput = 'I have no theatre saved as your favorite.';
+            }
+
             response.tellWithCard(speechOutput, 'AMC Favorite Theatre Request', speechOutput);
         });
     };
@@ -291,10 +350,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * theatre, or change their favorite theatre.
      */
     intentHandlers.ListLocalTheatresIntent = function (intent, session, response) {
+        var speechOutput = '',
+            cardOutput = '';
+            
         storage.loadTheatre(session, function (currentTheatre) {
-            var speechOutput = '',
-            	cardOutput = '';
-            helperUtil.checkSessionVariables(currentTheatre);
                     
             if(currentTheatre.data.localTheatres.length < 1) {
                 speechOutput = 'Unfortunately it doesn\'t look like there are any AMC theatres in your city. If the theatre that you visit is in another city, please set your zip code to that city.';
@@ -317,37 +376,41 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * Returns the phone number for a theatre.
      */
     intentHandlers.GetPhoneNumberForTheatreIntent = function (intent, session, response) {
+        var speechOutput = '',
+            cardOutput = '',
+            callString = '',
+            theatreNameSlot = intent.slots.theatreName,
+            theatreName = '',
+            theatreID =  0,
+            checkName = '';
+
+        if (!theatreNameSlot || !theatreNameSlot.value) {
+            response.ask('sorry, I didn\'t hear you say a theatre, please say again?');
+            return;
+        }
+
         storage.loadTheatre(session, function (currentTheatre) {
-            helperUtil.checkSessionVariables(currentTheatre);
-            var speechOutput = '',
-                cardOutput = '',
-                theatreNameSlot = intent.slots.theatreName,
-                theatreID = currentTheatre.data.favoriteTheatre.id || 0,
-                theatreName = currentTheatre.data.favoriteTheatre.id || 0;
+            theatreID = currentTheatre.data.favoriteTheatre.id || 0;
+            theatreName = currentTheatre.data.favoriteTheatre.name || '';
 
-            if (theatreNameSlot && theatreNameSlot.value) {
-                //Get theatre with name:
-                // Loop through the theatres saved locally to find the theatre with the same name.
-                currentTheatre.data.localTheatres.forEach(function(element) {
-                    theatreName = numberUtil.parseNumbersInString(theatreNameSlot.value);
-                    var checkName = element.name.replace('AMC ', '').toLowerCase();
-                    if(element.name.toLowerCase() == theatreName.toLowerCase() ||
-                                        checkName == theatreName.toLowerCase()) {
-                        theatreID = element.id;
-                    }
-                }, this);
-            }
+            // Loop through the theatres saved locally to find the theatre with the same name.
+            currentTheatre.data.localTheatres.forEach(function(element) {
+                theatreName = numberUtil.parseNumbersInString(theatreNameSlot.value);
+                checkName = element.name.replace('AMC ', '').toLowerCase();
+                if(element.name.toLowerCase() == theatreName.toLowerCase() ||
+                                    checkName == theatreName.toLowerCase()) {
+                    theatreID = element.id;
+                }
+            }, this);
 
-            speechOutput += 'The phone number for ' + theatreName + ' is: ';
-            
-            var callString = 'theatres/' + theatreID;
+            callString = 'theatres/' + theatreID;
             console.log('API Call: ' + callString);
             api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                 if (err) {
                     speechOutput = textHelper.errors.amcAPIUnavailable;
                     cardOutput = speechOutput + ' ' + err;
                 } else {
-                    speechOutput += apiResponse.guestServicesPhoneNumber + '.';
+                    speechOutput = 'The phone number for ' + theatreName + ' is: ' + apiResponse.guestServicesPhoneNumber + '.';
                     cardOutput = speechOutput;
                 }
                 response.tellWithCard(speechOutput, 'AMC Theatre Phone Number', cardOutput);
@@ -359,20 +422,28 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * Returns the address for a theatre, and a link to the directions in the card.
      */
     intentHandlers.GetAddressOfTheatreIntent = function (intent, session, response) {
+        var speechOutput = '',
+            cardOutput = '',
+            callString = '',
+            theatreNameSlot = intent.slots.theatreName,
+            theatreName = '',
+            theatreID =  0,
+            checkName = '';
+
+        if (!theatreNameSlot || !theatreNameSlot.value) {
+            response.ask('sorry, I didn\'t hear you say a theatre, please say again?');
+            return;
+        }
+
         storage.loadTheatre(session, function (currentTheatre) {
-            helperUtil.checkSessionVariables(currentTheatre);
-            var speechOutput = '',
-                cardOutput = '',
-                theatreNameSlot = intent.slots.theatreName,
-                theatreID = currentTheatre.data.favoriteTheatre.id || 0,
-                theatreName = currentTheatre.data.favoriteTheatre.id || 0;
+            theatreID = currentTheatre.data.favoriteTheatre.id || 0;
+            theatreName = currentTheatre.data.favoriteTheatre.name || '';
 
             if (theatreNameSlot && theatreNameSlot.value) {
-                //Get theatre with name:
                 // Loop through the theatres saved locally to find the theatre with the same name.
                 currentTheatre.data.localTheatres.forEach(function(element) {
                     theatreName = numberUtil.parseNumbersInString(theatreNameSlot.value);
-                    var checkName = element.name.replace('AMC ', '').toLowerCase();
+                    checkName = element.name.replace('AMC ', '').toLowerCase();
                     if(element.name.toLowerCase() == theatreName.toLowerCase() ||
                                         checkName == theatreName.toLowerCase()) {
                         theatreID = element.id;
@@ -382,7 +453,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
 
             speechOutput += 'The address for ' + theatreName + ' is: ';
             
-            var callString = 'theatres/' + theatreID;
+            callString = 'theatres/' + theatreID;
             console.log('API Call: ' + callString);
             api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                 if (err) {
@@ -393,6 +464,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     speechOutput += apiResponse.location.cityUrlSuffixText + ', ';
                     speechOutput += apiResponse.location.stateUrlSuffixText + '.';
                     cardOutput = speechOutput;
+
                     speechOutput += ' See the card for a link to get directions.';
                     cardOutput += ' Directions ' + apiResponse.location.directionsUrl + '.';
                 }
@@ -407,13 +479,16 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * lists the movies that are playing at all theatres.
      */
     intentHandlers.NowPlayingIntent = function (intent, session, response) {
+        var speechOutput = 'Now playing in a theatre near you.',
+            cardOutput = '',
+            callString = '',
+            weekdayNameSlot = intent.slots.weekday,
+            weekday = new Date(),
+            weekdayResponse = 'today',
+            movies = new Array();
+
         storage.loadTheatre(session, function (currentTheatre) {
-            var speechOutput = '',
-            	cardOutput = '',
-                weekdayNameSlot = intent.slots.weekday,
-            	weekday = dateUtil.getTodaysDate(currentTheatre.data.location.utcOffset),
-                weekdayResponse = 'today';
-            helperUtil.checkSessionVariables(currentTheatre);
+            weekday = dateUtil.getTodaysDate(currentTheatre.data.location.utcOffset);
 
             if (weekdayNameSlot && weekdayNameSlot.value) {
                 weekdayResponse = weekdayNameSlot.value;
@@ -421,16 +496,16 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             }
                     
             if(currentTheatre.data.favoriteTheatre.id != null && currentTheatre.data.favoriteTheatre.id > 0) {
-                speechOutput += 'Now playing in ' + currentTheatre.data.favoriteTheatre.name + '. ';
+                speechOutput = 'Now playing in ' + currentTheatre.data.favoriteTheatre.name + '. ';
                 
-                var callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + weekday;
+                callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + weekday;
                 console.log('API Call: ' + callString);
                 api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                     if (err) {
                         speechOutput = textHelper.errors.amcAPIUnavailable;
                         cardOutput = speechOutput + ' ' + err;
                     } else {
-                        var movies = apiResponse._embedded.showtimes;
+                        movies = apiResponse._embedded.showtimes;
                         for(var i = 0, l = movies.length; i < l; i++) {
                             if(i == (l - 1)) {
                                 speechOutput += 'and ' + movies[i].movieName + '. ';
@@ -443,14 +518,13 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     response.tellWithCard(speechOutput, 'AMC Movies Now Playing', cardOutput);
                 });                
             } else {
-                speechOutput += 'Now playing in a theatre near you.';
                 console.log('API Call: movies/views/now-playing');
                 api.makeRequest('movies/views/now-playing', function apiResponseCallback(err, apiResponse) {
                     if (err) {
                         speechOutput = textHelper.errors.amcAPIUnavailable;
                         cardOutput = speechOutput + ' ' + err;
                     } else {
-                        var movies = apiResponse._embedded.movies;
+                        movies = apiResponse._embedded.movies;
                         for(var i = 0, l = movies.length; i < l; i++) {
                             if(i == (l - 1)) {
                                 speechOutput += 'and ' + movies[i].name + '. ';
@@ -472,18 +546,18 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * movies coming to a specific theatre. 
      */
     intentHandlers.ComingSoonIntent = function (intent, session, response) {
+        var speechOutput = 'Coming soon to a theatre near you.',
+            cardOutput = '',
+            movies = new Array();
+
         storage.loadTheatre(session, function (currentTheatre) {
-            helperUtil.checkSessionVariables(currentTheatre);
-            var speechOutput = currentTheatre.data.favoriteTheatre.name != null ? 'Coming soon to ' + currentTheatre.data.favoriteTheatre.name +'. ' : 'Coming soon to a theatre near you.';
-            var cardOutput = '';
-            
             console.log('API Call: movies/views/coming-soon');
             api.makeRequest('movies/views/coming-soon', function apiResponseCallback(err, apiResponse) {
                 if (err) {
                     speechOutput = textHelper.errors.amcAPIUnavailable;
-                        cardOutput = speechOutput + ' ' + err;
+                    cardOutput = speechOutput + ' ' + err;
                 } else {
-                    var movies = apiResponse._embedded.movies;
+                    movies = apiResponse._embedded.movies;
                     for(var i = 0, l = movies.length; i < l; i++) {
                         if(i == (l - 1)) {
                             speechOutput += 'and ' + movies[i].name + '. ';
@@ -502,204 +576,119 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * Returns all the showtimes of a movie for a certain date.
      */
     intentHandlers.GetMovieShowtimesIntent = function (intent, session, response) {
-        storage.loadTheatre(session, function (currentTheatre) {
-            var speechOutput = '',
-                cardOutput = '',
-                movieNameSlot = intent.slots.movieName,
-            	movieName = '',
-                weekdayNameSlot = intent.slots.weekday,
-            	weekday = dateUtil.getTodaysDate(currentTheatre.data.location.utcOffset),
-                weekdayResponse = 'today',
-                regularShowtimes = [],
-                threedeeShowtimes = [];
-            helperUtil.checkSessionVariables(currentTheatre);
+        var speechOutput = '',
+            cardOutput = '',
+            callString = '',
+            movieNameSlot = intent.slots.movieName,
+            movieName = '',
+            weekdayNameSlot = intent.slots.weekday,
+            weekday = new Date(),
+            weekdayResponse = 'today',
+            movies = new Array(),
+            regularShowtimes = new Array(),
+            threedeeShowtimes = new Array();
 
-            // Verify that the input slots have values.
-            if (!movieNameSlot || !movieNameSlot.value) {
-                speechOutput = 'I\'m sorry, I don\'t think I heard you correctly. What movie where you looking for?';
-                response.ask(speechOutput, 'What was that movie again?');
-                return;
-            } else {
-                movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
-
-                if (weekdayNameSlot && weekdayNameSlot.value) {
-                    weekdayResponse = weekdayNameSlot.value;
-                    weekday = dateUtil.getDayFromString(weekdayNameSlot.value, currentTheatre.data.location.utcOffset);
-                }
-
-                var callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + weekday + '/?movie=' + movieName;            
-                console.log('API Call: ' + callString);
-                api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
-                     
-                    if (err) { // If there's an error finding the movie, try again, this time parsing the movie name for numbers.
-                        movieName = numberUtil.parseNumbersInString(movieName);
-                        callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + weekday + '/?movie=' + movieName;
-                        api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
-
-                            if (err) {
-                                if(err.code == 5217) {
-                                    speechOutput = textHelper.errors.noShowtimesFound;
-                                    cardOutput = speechOutput + ' ' + err;
-                                } else {
-                                    speechOutput = textHelper.errors.amcAPIUnavailable;
-                                    cardOutput = speechOutput + ' ' + err;
-                                }
-                            } else {
-                                var movies = new Array();
-                                movies = apiResponse._embedded.showtimes;
-                                
-                                if(movies.length < 1) {
-                                    speechOutput = textHelper.errors.movieNotFound;
-                                } else {
-                                    speechOutput += movies[0].movieName + ' is playing ' + weekdayResponse + ' at ';
-                                    
-                                    for(var i = 0, l = movies.length; i < l; i++) {
-                                        if(i == (l - 1)) {
-                                            speechOutput += 'and ' + dateUtil.getFormattedTimeAmPm(dateUtil.getLocalDate(currentTheatre.data.location.utcOffset, new Date(movies[i].showDateTimeUtc))) + '. ';
-                                        } else {
-                                            speechOutput += dateUtil.getFormattedTimeAmPm(dateUtil.getLocalDate(currentTheatre.data.location.utcOffset, new Date(movies[i].showDateTimeUtc))) + ', ';
-                                        }
-                                    }
-                                }
-                                cardOutput = speechOutput;
-                            }
-                            response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
-                        });
-                    } else {
-                        var movies = new Array();
-                        movies = apiResponse._embedded.showtimes;
-                        
-                        if(movies.length < 1) {
-                            speechOutput = textHelper.errors.movieNotFound;
-                        } else {
-                            speechOutput += movies[0].movieName + ' is playing ' + weekdayResponse + ' at ';
-                            
-                            movies.forEach(function(movie) {
-                                var showdate = dateUtil.getLocalDate(currentTheatre.data.location.utcOffset, new Date(movie.showDateTimeUtc));
-                                var sellByDate = dateUtil.getLocalDate(currentTheatre.data.location.utcOffset, new Date(movie.sellUntilDateTimeUtc));
-
-                                if(dateUtil.afterCurrentTime(currentTheatre.data.location.utcOffset, sellByDate) > -1){
-                                    if(helperUtil.isMovieThreeDee(movie.attributes)) {
-                                        threedeeShowtimes.push(dateUtil.getFormattedTimeAmPm(showdate));
-                                    } else {
-                                        regularShowtimes.push(dateUtil.getFormattedTimeAmPm(showdate));
-                                    }
-                                }
-                            }, this);
-
-                            if(regularShowtimes.length < 1 && threedeeShowtimes.length < 1) {
-                                speechOutput = textHelper.errors.noShowtimesFound;
-                            } else if(regularShowtimes.length > 0 && threedeeShowtimes.length > 0) {
-                                regularShowtimes.forEach(function(time) {
-                                    speechOutput += time + ', ';
-                                }, this);
-                                speechOutput += 'and in 3 D at: ';
-                                threedeeShowtimes.forEach(function(time) {
-                                    speechOutput += time + ', ';
-                                }, this);
-                            } else if (regularShowtimes.length > 0) {
-                                regularShowtimes.forEach(function(time) {
-                                    speechOutput += time + ', ';
-                                }, this);
-                            } else if (threedeeShowtimes.length > 0) {
-                                speechOutput = movies[0].movieName + ' is playing in 3 D ' + weekdayResponse + ' at ';
-                                threedeeShowtimes.forEach(function(time) {
-                                    speechOutput += time + ', ';
-                                }, this);
-                            }
-                            speechOutput = helperUtil.replaceLast(speechOutput, ', ', '.');
-                        }
-                        cardOutput = speechOutput;
-                        response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
-                    }
-                });
-            }
-        });
-    };
-
-    /**
-     * Returns more details about a movie. Work in progress. Need to make it less clunky.
-     */
-    intentHandlers.GetMovieDetailsIntent = function (intent, session, response) {
-        var speechOutput;
-        var movieNameSlot = intent.slots.movieName, movieName;
-        
-        // slots can be missing, or slots can be provided but with empty value.
-        // must test for both.
+         // Verify that the input slots have values.
         if (!movieNameSlot || !movieNameSlot.value) {
             speechOutput = 'I\'m sorry, I don\'t think I heard you correctly. What movie where you looking for?';
-            var repromptText = 'What was that movie again?';
-            response.ask(speechOutput, repromptText);
+            response.ask(speechOutput, 'What was that movie again?');
             return;
-        } else {
-            movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
-            
-            api.makeRequest('movies?name=' + movieName, function apiResponseCallback(err, apiResponse) {
-                var speechOutput;
-                var cardOutput;
-                
-                if (err) { // If there's an error finding the movie, try again, this time parseing the movie name for numbers.
+        }
+        movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
+        
+        // Optional. Defaults to 'today'.
+        if (weekdayNameSlot && weekdayNameSlot.value) {
+            weekdayResponse = weekdayNameSlot.value;
+        }
+        
+        storage.loadTheatre(session, function (currentTheatre) {
+            weekday = dateUtil.getDayFromString(weekdayNameSlot.value, currentTheatre.data.location.utcOffset);
+
+            callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + weekday + '/?movie=' + movieName;            
+            console.log('API Call: ' + callString);
+            api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                    
+                if (err) { // If there's an error finding the movie, try again, this time parsing the movie name for numbers.
                     movieName = numberUtil.parseNumbersInString(movieName);
-                    callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + dateUtil.getTodaysDate(currentTheatre.data.location.utcOffset) + '/?movie=' + movieName;
+                    callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + weekday + '/?movie=' + movieName;
                     api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
 
                         if (err) {
-                            speechOutput = textHelper.errors.amcAPIUnavailable;
-                            cardOutput = speechOutput + ' ' + err;
+                            if(err.code == 5217) {
+                                speechOutput = textHelper.errors.noShowtimesFound;
+                                cardOutput = speechOutput + ' ' + err;
+                            } else {
+                                speechOutput = textHelper.errors.amcAPIUnavailable;
+                                cardOutput = speechOutput + ' ' + err;
+                            }
                         } else {
-                            var movies = new Array();
-                            movies = apiResponse._embedded.movies;
+                            movies = apiResponse._embedded.showtimes;
                             
                             if(movies.length < 1) {
                                 speechOutput = textHelper.errors.movieNotFound;
                             } else {
-                                var movie = movies[0];
-                                //TODO Find showtimes using user's favorite theatre. 
-                                speechOutput = movie.name + ', is a' + helperUtil.parseMovieGenre(movie.genre) + ' movie, rated ' + movie.mpaaRating + ', and running ' + movie.runTime + ' minutes long. The description reads: ' + movie.synopsis + ' The movie is directed by: ' + movie.directors + ' and stars: ' + movie.starringActors + '.';
-                                var threedee = false;
-                                for(var i = 0, l = movie.attributes.length; i < l; i++) {
-                                    if(movie.attributes[i].code === 'THREED') {
-                                        threedee = true;
+                                speechOutput += movies[0].movieName + ' is playing ' + weekdayResponse + ' at ';
+                                
+                                for(var i = 0, l = movies.length; i < l; i++) {
+                                    if(i == (l - 1)) {
+                                        speechOutput += 'and ' + dateUtil.getFormattedTimeAmPm(dateUtil.getLocalDate(currentTheatre.data.location.utcOffset, new Date(movies[i].showDateTimeUtc))) + '. ';
+                                    } else {
+                                        speechOutput += dateUtil.getFormattedTimeAmPm(dateUtil.getLocalDate(currentTheatre.data.location.utcOffset, new Date(movies[i].showDateTimeUtc))) + ', ';
                                     }
                                 }
-                                if(threedee == true) {
-                                    speechOutput += ' This movie is available in 3-D.';
-                                } else {
-                                    speechOutput += ' There are no 3-D showings available for this movie.';
-                                }
-                                cardOutput = speechOutput;
-                                response.tellWithCard(speechOutput, 'AMC', cardOutput);
                             }
+                            cardOutput = speechOutput;
                         }
-                        response.tellWithCard(speechOutput, 'AMC Movie Details', cardOutput);
+                        response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
                     });
                 } else {
-                    var movies = new Array();
-                    movies = apiResponse._embedded.movies;
+                    movies = apiResponse._embedded.showtimes;
                     
                     if(movies.length < 1) {
                         speechOutput = textHelper.errors.movieNotFound;
                     } else {
-                        var movie = movies[0];
-                        //TODO Find showtimes using user's favorite theatre. 
-                        speechOutput = movie.name + ', is a' + helperUtil.parseMovieGenre(movie.genre) + ' movie, rated ' + movie.mpaaRating + ', and running ' + movie.runTime + ' minutes long. The description reads: ' + movie.synopsis + ' The movie is directed by: ' + movie.directors + ' and stars: ' + movie.starringActors + '.';
-                        var threedee = false;
-                        for(var i = 0, l = movie.attributes.length; i < l; i++) {
-                            if(movie.attributes[i].code === 'THREED') {
-                                threedee = true;
+                        speechOutput += movies[0].movieName + ' is playing ' + weekdayResponse + ' at ';
+                        
+                        movies.forEach(function(movie) {
+                            var showdate = dateUtil.getLocalDate(currentTheatre.data.location.utcOffset, new Date(movie.showDateTimeUtc));
+                            var sellByDate = dateUtil.getLocalDate(currentTheatre.data.location.utcOffset, new Date(movie.sellUntilDateTimeUtc));
+
+                            if(dateUtil.afterCurrentTime(currentTheatre.data.location.utcOffset, sellByDate) > -1){
+                                if(helperUtil.isMovieThreeDee(movie.attributes)) {
+                                    threedeeShowtimes.push(dateUtil.getFormattedTimeAmPm(showdate));
+                                } else {
+                                    regularShowtimes.push(dateUtil.getFormattedTimeAmPm(showdate));
+                                }
                             }
+                        }, this);
+
+                        if(regularShowtimes.length < 1 && threedeeShowtimes.length < 1) {
+                            speechOutput = textHelper.errors.noShowtimesFound;
+                        } else if(regularShowtimes.length > 0 && threedeeShowtimes.length > 0) {
+                            regularShowtimes.forEach(function(time) {
+                                speechOutput += time + ', ';
+                            }, this);
+                            speechOutput += 'and in 3 D at: ';
+                            threedeeShowtimes.forEach(function(time) {
+                                speechOutput += time + ', ';
+                            }, this);
+                        } else if (regularShowtimes.length > 0) {
+                            regularShowtimes.forEach(function(time) {
+                                speechOutput += time + ', ';
+                            }, this);
+                        } else if (threedeeShowtimes.length > 0) {
+                            speechOutput = movies[0].movieName + ' is playing in 3 D ' + weekdayResponse + ' at ';
+                            threedeeShowtimes.forEach(function(time) {
+                                speechOutput += time + ', ';
+                            }, this);
                         }
-                        if(threedee == true) {
-                            speechOutput += ' This movie is available in 3-D.';
-                        } else {
-                            speechOutput += ' There are no 3-D showings available for this movie.';
-                        }
-                        cardOutput = speechOutput;
-                        response.tellWithCard(speechOutput, 'AMC Movie Details', cardOutput);
+                        speechOutput = helperUtil.replaceLast(speechOutput, ', ', '.');
                     }
+                    cardOutput = speechOutput;
+                    response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
                 }
             });
-        }
+        });
     };
 
     /**
