@@ -356,7 +356,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         storage.loadTheatre(session, function (currentTheatre) {
                     
             if(currentTheatre.data.localTheatres.length < 1) {
-                speechOutput = 'Unfortunately it doesn\'t look like there are any AMC theatres in your city. If the theatre that you visit is in another city, please set your zip code to that city.';
+                speechOutput = textHelper.errors.theatresNotFound;
             } else {
                 speechOutput += 'Here are the theatres I found in your city. ';
                 for(var i = 0, l = currentTheatre.data.localTheatres.length; i < l; i++) {
@@ -574,6 +574,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
 
     /**
      * Returns all the showtimes of a movie for a certain date.
+     * Sorted by regular showing first, then 3-D showings.
      */
     intentHandlers.GetMovieShowtimesIntent = function (intent, session, response) {
         var speechOutput = '',
@@ -592,9 +593,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             regularShowtimes = new Array(),
             threedeeShowtimes = new Array();
 
-         // Verify that the input slots have values.
+        // Verify that the input slots have values.
         if (!movieNameSlot || !movieNameSlot.value) {
-            speechOutput = 'I\'m sorry, I don\'t think I heard you correctly. What movie where you looking for?';
+            speechOutput = textHelper.errors.misheardMovieTitle;
             response.ask(speechOutput, 'What was that movie again?');
             return;
         }
@@ -646,15 +647,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                             if(movies.length < 1) {
                                 speechOutput = textHelper.errors.movieNotFound;
                             } else {
-                                speechOutput += movies[0].movieName + ' is playing ' + weekdayResponse + ' at ';
-                                
-                                for(var i = 0, l = movies.length; i < l; i++) {
-                                    if(i == (l - 1)) {
-                                        speechOutput += 'and ' + dateUtil.getFormattedTimeAmPm(dateUtil.getLocalDate(currentTheatre.data.location.utcOffset, new Date(movies[i].showDateTimeUtc))) + '. ';
-                                    } else {
-                                        speechOutput += dateUtil.getFormattedTimeAmPm(dateUtil.getLocalDate(currentTheatre.data.location.utcOffset, new Date(movies[i].showDateTimeUtc))) + ', ';
-                                    }
-                                }
+                                speechOutput += helperUtil.getShowtimeString(movies, currentTheatre);
                             }
                             cardOutput = speechOutput;
                         }
@@ -666,45 +659,166 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     if(movies.length < 1) {
                         speechOutput = textHelper.errors.movieNotFound;
                     } else {
-                        speechOutput += movies[0].movieName + ' is playing ' + weekdayResponse + ' at ';
-                        
-                        movies.forEach(function(movie) {
-                            var showdate = dateUtil.getLocalDate(currentTheatre.data.location.utcOffset, new Date(movie.showDateTimeUtc));
-                            var sellByDate = dateUtil.getLocalDate(currentTheatre.data.location.utcOffset, new Date(movie.sellUntilDateTimeUtc));
-
-                            if(dateUtil.afterCurrentTime(currentTheatre.data.location.utcOffset, sellByDate) > -1){
-                                if(helperUtil.isMovieThreeDee(movie.attributes)) {
-                                    threedeeShowtimes.push(dateUtil.getFormattedTimeAmPm(showdate));
-                                } else {
-                                    regularShowtimes.push(dateUtil.getFormattedTimeAmPm(showdate));
-                                }
-                            }
-                        }, this);
-
-                        if(regularShowtimes.length < 1 && threedeeShowtimes.length < 1) {
-                            speechOutput = textHelper.errors.noShowtimesFound;
-                        } else if(regularShowtimes.length > 0 && threedeeShowtimes.length > 0) {
-                            regularShowtimes.forEach(function(time) {
-                                speechOutput += time + ', ';
-                            }, this);
-                            speechOutput += 'and in 3 D at: ';
-                            threedeeShowtimes.forEach(function(time) {
-                                speechOutput += time + ', ';
-                            }, this);
-                        } else if (regularShowtimes.length > 0) {
-                            regularShowtimes.forEach(function(time) {
-                                speechOutput += time + ', ';
-                            }, this);
-                        } else if (threedeeShowtimes.length > 0) {
-                            speechOutput = movies[0].movieName + ' is playing in 3 D ' + weekdayResponse + ' at ';
-                            threedeeShowtimes.forEach(function(time) {
-                                speechOutput += time + ', ';
-                            }, this);
-                        }
-                        speechOutput = helperUtil.replaceLast(speechOutput, ', ', '.');
+                        speechOutput += helperUtil.getShowtimeString(movies, currentTheatre);
                     }
                     cardOutput = speechOutput;
                     response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
+                }
+            });
+        });
+    };
+
+    /**
+     * Gets the sysnopsis of a movie.
+     */
+    intentHandlers.GetMovieSynopsis = function (intent, session, response) {
+        var speechOutput = '',
+            cardOutput = '',
+            callString = '',
+            movieNameSlot = intent.slots.movieName,
+            movieName = '';
+
+        // Verify that the input slots have values.
+        if (!movieNameSlot || !movieNameSlot.value) {
+            speechOutput = textHelper.errors.misheardMovieTitle;
+            response.ask(speechOutput, 'What was that movie again?');
+            return;
+        }
+        movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
+        
+        storage.loadTheatre(session, function (currentTheatre) {
+            
+            callString = 'movies/' + movieName;            
+            console.log('API Call: ' + callString);
+            api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                    
+                if (err) { // If there's an error finding the movie, try again, this time parsing the movie name for numbers.
+                    movieName = numberUtil.parseNumbersInString(movieName);
+                    callString = 'movies/' + movieName;            
+                    api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+
+                        if (err) {
+                            if(err.code == 5302) {
+                                speechOutput = textHelper.errors.movieNotFound;
+                                cardOutput = speechOutput + ' ' + err;
+                            } else {
+                                speechOutput = textHelper.errors.amcAPIUnavailable;
+                                cardOutput = speechOutput + ' ' + err;
+                            }
+                        } else {
+                            speechOutput = apiResponse.name + ': ' + apiResponse.synopsis;
+                            cardOutput = speechOutput;
+                        }
+                        response.tellWithCard(speechOutput, 'AMC Movie Synopsis', cardOutput);
+                    });
+                } else {
+                    speechOutput = apiResponse.name + ': ' + apiResponse.synopsis;
+                    cardOutput = speechOutput;
+                    response.tellWithCard(speechOutput, 'AMC Movie synopsis', cardOutput);
+                }
+            });
+        });
+    };
+    
+    /**
+     * Gets the MPAA rating of a movie.
+     */
+    intentHandlers.GetMovieMPAARating = function (intent, session, response) {
+        var speechOutput = '',
+            cardOutput = '',
+            callString = '',
+            movieNameSlot = intent.slots.movieName,
+            movieName = '';
+
+            // Verify that the input slots have values.
+        if (!movieNameSlot || !movieNameSlot.value) {
+            speechOutput = textHelper.errors.misheardMovieTitle;
+            response.ask(speechOutput, 'What was that movie again?');
+            return;
+        }
+        movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
+        
+        storage.loadTheatre(session, function (currentTheatre) {
+            
+            callString = 'movies/' + movieName;            
+            console.log('API Call: ' + callString);
+            api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                    
+                if (err) { // If there's an error finding the movie, try again, this time parsing the movie name for numbers.
+                    movieName = numberUtil.parseNumbersInString(movieName);
+                    callString = 'movies/' + movieName;            
+                    api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+
+                        if (err) {
+                            if(err.code == 5302) {
+                                speechOutput = textHelper.errors.movieNotFound;
+                                cardOutput = speechOutput + ' ' + err;
+                            } else {
+                                speechOutput = textHelper.errors.amcAPIUnavailable;
+                                cardOutput = speechOutput + ' ' + err;
+                            }
+                        } else {
+                            speechOutput = apiResponse.name + ' is rated ' + apiResponse.mpaaRating;
+                            cardOutput = speechOutput;
+                        }
+                        response.tellWithCard(speechOutput, 'AMC Movie MPAA Rating', cardOutput);
+                    });
+                } else {
+                    speechOutput = apiResponse.name + ' is rated ' + apiResponse.mpaaRating;
+                    cardOutput = speechOutput;
+                    response.tellWithCard(speechOutput, 'AMC Movie MPAA Rating', cardOutput);
+                }
+            });
+        });
+    };
+
+    /**
+     * Gets the run time of a movie.
+     */
+    intentHandlers.GetMovieRunTime = function (intent, session, response) {
+        var speechOutput = '',
+            cardOutput = '',
+            callString = '',
+            movieNameSlot = intent.slots.movieName,
+            movieName = '';
+
+            // Verify that the input slots have values.
+        if (!movieNameSlot || !movieNameSlot.value) {
+            speechOutput = textHelper.errors.misheardMovieTitle;
+            response.ask(speechOutput, 'What was that movie again?');
+            return;
+        }
+        movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
+        
+        storage.loadTheatre(session, function (currentTheatre) {
+            
+            callString = 'movies/' + movieName;            
+            console.log('API Call: ' + callString);
+            api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                    
+                if (err) { // If there's an error finding the movie, try again, this time parsing the movie name for numbers.
+                    movieName = numberUtil.parseNumbersInString(movieName);
+                    callString = 'movies/' + movieName;            
+                    api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+
+                        if (err) {
+                            if(err.code == 5302) {
+                                speechOutput = textHelper.errors.movieNotFound;
+                                cardOutput = speechOutput + ' ' + err;
+                            } else {
+                                speechOutput = textHelper.errors.amcAPIUnavailable;
+                                cardOutput = speechOutput + ' ' + err;
+                            }
+                        } else {
+                            speechOutput = apiResponse.name + ' is ' + helperUtil.GetRunTimeString(apiResponse.runTime) + ' long';
+                            cardOutput = speechOutput;
+                        }
+                        response.tellWithCard(speechOutput, 'AMC Movie Run Time', cardOutput);
+                    });
+                } else {
+                    speechOutput = apiResponse.name + ' is ' + helperUtil.GetRunTimeString(apiResponse.runTime) + ' long';
+                    cardOutput = speechOutput;
+                    response.tellWithCard(speechOutput, 'AMC Movie Run Time', cardOutput);
                 }
             });
         });

@@ -106,6 +106,36 @@
           "type": "THEATRENAME"
         }
       ]
+    },
+
+    {
+      "intent": "GetMovieSynopsis",
+      "slots": [
+        {
+      		"name": "movieName",
+      		"type": "MOVIENAME"
+        }
+      ]
+    },
+
+    {
+      "intent": "GetMovieMPAARating",
+      "slots": [
+        {
+      		"name": "movieName",
+      		"type": "MOVIENAME"
+        }
+      ]
+    },
+
+    {
+      "intent": "GetMovieRunTime",
+      "slots": [
+        {
+      		"name": "movieName",
+      		"type": "MOVIENAME"
+        }
+      ]
     }
   ]
 }

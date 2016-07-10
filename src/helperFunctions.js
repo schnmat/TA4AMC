@@ -1,9 +1,6 @@
 'use strict';
-
-/**
- * Wikipedia has a list of movies that have numbers in the name:
- * https://www.wikiwand.com/en/List_of_films:_numbers
- */
+var dateUtil = require('./dateFunctions'),
+    textHelper = require('./textHelper');
 
 var helperFunctions = (function () {
 
@@ -44,22 +41,82 @@ var helperFunctions = (function () {
                 data.favoriteTheatre.name = null;
             }
         },
-        
+
         /**
-         * Takes a string of the movie genre (which is typically in all caps)
-         * and returns a string that can be used in the response sentence.
+         * Takes a list of movies taken from the api response and builds
+         * a string to return in the response.
+        * Sorted by regular showing first, then 3-D showings.
          */
-        parseMovieGenre: function(str) {
-            var returnString = str;
-            switch(str) {
-                case 'ANIMATION':
-                    returnString = 'n animated';
-                    break;
-                default:
-                    returnString = str;
-                    break;
+        getShowtimeString: function(movies, currentTheatre) {
+            var speechOutput = movies[0].movieName + ' is playing ' + weekdayResponse + ' at ',
+                regularShowtimes = new Array(),
+                threedeeShowtimes = new Array();
+
+            movies.forEach(function(movie) {
+                var showdate = dateUtil.getLocalDate(currentTheatre.data.location.utcOffset, new Date(movie.showDateTimeUtc));
+                var sellByDate = dateUtil.getLocalDate(currentTheatre.data.location.utcOffset, new Date(movie.sellUntilDateTimeUtc));
+
+                if(dateUtil.afterCurrentTime(currentTheatre.data.location.utcOffset, sellByDate) > -1){
+                    if(this.isMovieThreeDee(movie.attributes)) {
+                        threedeeShowtimes.push(dateUtil.getFormattedTimeAmPm(showdate));
+                    } else {
+                        regularShowtimes.push(dateUtil.getFormattedTimeAmPm(showdate));
+                    }
+                }
+            }, this);
+
+            if(regularShowtimes.length < 1 && threedeeShowtimes.length < 1) {
+                speechOutput = textHelper.errors.noShowtimesFound;
+            } else if(regularShowtimes.length > 0 && threedeeShowtimes.length > 0) {
+                regularShowtimes.forEach(function(time) {
+                    speechOutput += time + ', ';
+                }, this);
+                speechOutput += 'and in 3 D at: ';
+                threedeeShowtimes.forEach(function(time) {
+                    speechOutput += time + ', ';
+                }, this);
+            } else if (regularShowtimes.length > 0) {
+                regularShowtimes.forEach(function(time) {
+                    speechOutput += time + ', ';
+                }, this);
+            } else if (threedeeShowtimes.length > 0) {
+                speechOutput = movies[0].movieName + ' is playing in 3 D ' + weekdayResponse + ' at ';
+                threedeeShowtimes.forEach(function(time) {
+                    speechOutput += time + ', ';
+                }, this);
             }
-            return returnString;
+            
+            return this.replaceLast(speechOutput, ', ', '.');
+        },
+
+        /**
+         * Takes a number in minutes and returns a string of the length of time.
+         */
+        getRunTimeString: function(runtime) {
+            var output = '';
+            var hours = Math.floor(runtime / 60);
+            var minutes = runtime - (hours * 60);
+            
+            if(hours > 0) {
+                if(hours == 1) {
+                    output += hours + ' hour';
+                } else {
+                    output += hours + ' hours';
+                }
+            }
+                
+            if(minutes > 0) {
+                if(output.length > 0) {
+                    output += ' and ';
+                }
+                if(minutes == 1) {
+                    output += minutes + ' minute';
+                } else {
+                    output += minutes + ' minutes';
+                }
+            }
+
+            return output;
         },
 
         /**

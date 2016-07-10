@@ -56,8 +56,10 @@ ComingSoonIntent What movies are playing in the future
 ComingSoonIntent What movies are playing soon
 ComingSoonIntent What is coming soon
 
+GetMovieShowtimesIntent What time is {movieName} playing
 GetMovieShowtimesIntent What time is {movieName} playing {weekday}
 GetMovieShowtimesIntent What time is {movieName} playing {weekday} at {theatreName}
+GetMovieShowtimesIntent When is {movieName} playing
 GetMovieShowtimesIntent When is {movieName} playing {weekday}
 GetMovieShowtimesIntent When is {movieName} playing {weekday} at {theatreName}
 GetMovieShowtimesIntent What time is {movieName} playing on {weekday}
@@ -65,3 +67,16 @@ GetMovieShowtimesIntent What time is {movieName} playing on {weekday} at {theatr
 GetMovieShowtimesIntent When is {movieName} playing on {weekday}
 GetMovieShowtimesIntent When is {movieName} playing on {weekday} at {theatreName}
 GetMovieShowtimesIntent What time is {movieName} playing at {theatreName}
+
+GetMovieSynopsis What is {movieName} about
+GetMovieSynopsis What is the plot of {movieName}
+GetMovieSynopsis What is the synopsis of {movieName}
+
+GetMovieMPAARating What is {movieName} rated
+GetMovieMPAARating What is the rating of {movieName}
+GetMovieMPAARating What is the rating for {movieName}
+GetMovieMPAARating What is the mmpaa rating of {movieName}
+GetMovieMPAARating What is the mpaa rating for {movieName}
+
+GetMovieRunTime how long is {movieName}
+GetMovieRunTime what is the run time of {movieName}
