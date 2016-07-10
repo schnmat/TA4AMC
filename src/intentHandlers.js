@@ -582,8 +582,12 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             movieNameSlot = intent.slots.movieName,
             movieName = '',
             weekdayNameSlot = intent.slots.weekday,
-            weekday = new Date(),
             weekdayResponse = 'today',
+            weekday = new Date(),
+            theatreNameSlot = intent.slots.theatreName,
+            theatreName = '',
+            theatreId = 0,
+            checkName = '',
             movies = new Array(),
             regularShowtimes = new Array(),
             threedeeShowtimes = new Array();
@@ -602,15 +606,30 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         }
         
         storage.loadTheatre(session, function (currentTheatre) {
-            weekday = dateUtil.getDayFromString(weekdayNameSlot.value, currentTheatre.data.location.utcOffset);
-
-            callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + weekday + '/?movie=' + movieName;            
+            weekday = dateUtil.getDayFromString(weekdayResponse, currentTheatre.data.location.utcOffset);
+            
+            // Optional. Defaults to the favorite theatre.
+            if (theatreNameSlot && theatreNameSlot.value) {
+                // Loop through the theatres saved locally to find the theatre with the same name.
+                currentTheatre.data.localTheatres.forEach(function(element) {
+                    theatreName = numberUtil.parseNumbersInString(theatreNameSlot.value);
+                    checkName = element.name.replace('AMC ', '').toLowerCase();
+                    if(element.name.toLowerCase() == theatreName.toLowerCase() ||
+                                        checkName == theatreName.toLowerCase()) {
+                        theatreId = element.id;
+                    }
+                }, this);
+            } else {
+                theatreId = currentTheatre.data.favoriteTheatre.id;
+            }
+            
+            callString = 'theatres/' + theatreId + '/showtimes/' + weekday + '/?movie=' + movieName;            
             console.log('API Call: ' + callString);
             api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                     
                 if (err) { // If there's an error finding the movie, try again, this time parsing the movie name for numbers.
                     movieName = numberUtil.parseNumbersInString(movieName);
-                    callString = 'theatres/' + currentTheatre.data.favoriteTheatre.id + '/showtimes/' + weekday + '/?movie=' + movieName;
+                    callString = 'theatres/' + theatreId + '/showtimes/' + weekday + '/?movie=' + movieName;
                     api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
 
                         if (err) {

@@ -1,0 +1,385 @@
+Esquire 7
+Chesterfield 14
+Ward Parkway 14
+Independence Commons 20
+Headquarters Plaza 10
+Deptford 8
+Hamilton 24
+Oakview Plaza 24
+Westminster Promenade 24
+Ahwatukee 24
+Centerpoint 11
+Dine-in Theatres Esplanade 14
+Arizona Center 24
+Arrowhead 14
+River East 21
+Quail Springs Mall 24
+Crossroads Mall 16
+Penn Square 10
+Katy Mills 20
+Valley View 16
+The Parks At Arlington 18
+Grapevine Mills 30 with Dine-In Theatres
+Promenade 16
+Santa Anita 16
+Burbank Town Center 8
+Downtown Disney 12 (Los Angeles)
+Bay Street 16
+Montebello 10
+Marina Pacifica 12
+Palm Promenade 24
+Rolling Hills 20
+Century City 15
+Studio 30
+First Colony 24
+Rivercenter 11 with Alamo IMAX
+Firewheel 18
+Gulf Pointe 30
+Dine-in Theatres Coral Ridge 10
+Merchants Crossing 16
+Veterans 24
+The Regency 20
+Altamonte Mall 18
+Sunset Place 24
+Regency 24
+Hoffman Center 22
+Granite Run 8
+Neshaminy 24
+Potomac Mills 18
+Tysons Corner 16
+Hampton Towne Centre 24
+Dublin Village 18
+Lennox Town Center 24
+Easton Town Center 30 with Dine-in Theatres
+Avenue Forsyth 12
+Southlake 24
+Barrett Commons 24
+Deer Valley 16
+Del Amo 18
+Saratoga 14
+Van Ness 14
+Ontario Mills 30
+Burbank Town Center 6
+Fallbrook 7
+Mercado 20
+Mall of Louisiana 15
+Town Square 18
+South Barrington 30
+Westbank Palace 16
+Hammond Palace 10
+West Jordan 12
+Livonia 20
+Maple Ridge 8
+Woodhaven 10
+Tallahassee 20
+West Oaks 14
+Marple 10
+Oakbrook Center 4
+Starplex Columbus 10
+Legends 14
+Indian Mound 9
+Starplex Brunswick Square 13
+Dine-in Theatres Painters Crossing 9
+Southcenter 16
+Studio 28 with Dine-in Theatres
+Streets Of St Charles 8
+Eden Prairie Mall 18
+Rosedale 14
+Newport On The Levee 20
+309 Cinema 9
+Town Center 20
+Flatiron Crossing 14
+Orchard 12
+Highlands Ranch 24
+MarketFair 10
+Marlton 8
+Deer Valley 30
+Mesa Grand 24
+Creve Coeur 12
+Dine-in Theatres West Olive 16
+Barrywoods 24
+Randhurst 12
+Hawthorn 12
+Dine-in Theatres Block 37
+Southroads 20
+NorthPark 15
+Highland Village 12
+Willowbrook 24
+Village On The Parkway 9
+Woodlands Square 20
+West Shore 14
+Hays 8
+Starplex Rio Grande 10
+Starplex Boerne 11
+Starplex Galaxy 16
+Bakersfield 6
+Starplex Irving 10
+Woodbridge 5
+Parkway Pointe 15
+Framingham 16 with Dine-in Theatres
+Tyngsboro 12
+Burlington Cinema 10
+Ridge Park Square 8
+Westwood Town Center 6
+Irving Mall 14
+Castleton Square 14
+Mayfair Mall 18
+Eastchase 9
+Deerbrook 24
+Desert Ridge 18
+Santa Monica 7
+Burbank 16
+Eastridge 15
+Victoria Gardens 12
+Covina 17
+Mission Valley 20
+Fullerton 20 with Dine-in Theatres
+Puente Hills 20
+Palace 9
+Stonebriar 24
+Mesquite 30 with Dine-in Theatres
+Tamiami 18
+Dine-in Theatres Essex Green 9
+Plymouth Meeting Mall 12
+Dartmouth Mall 11
+Pacific Place 11
+Kitsap 8
+Dutch Square 14
+Loews 19th St. East 6
+Loews 34th Street 14
+Bay Terrace 6
+Loews Stony Brook 17
+Roosevelt Field 8
+Pittsburg 8
+Fresh Meadows 7
+Loews East Hanover 12
+Newport Centre 11
+Loews Kips Bay 15
+Loews Jersey Gardens 20
+Loews Brick Plaza 10
+Loews Seacourt 10
+Freehold 14
+Monmouth Mall 15
+Dine-In Theatres Menlo Park 12
+Aviation 12
+Magic Johnson Capital Center 12
+Metreon 16
+Universal CityWalk 19 (Los Angeles)
+Fountains 18
+Factoria 8
+Loews Cascade Mall 14
+Loews Woodinville 12
+Webster 12
+Chicago Ridge 6
+Loews Quarry Cinemas 14
+Loews Woodridge 18
+Sarasota 12
+Loews Waterfront 22
+Lake Square 12
+Plainville 20
+Loews Alderwood Mall 16
+Loews Georgetown 14
+Methuen 20
+Westgate 20
+Vestal Town Square 9
+Palisades 21
+Crystal Run 16
+Loews Rio Cinemas 18
+Lynnhaven 18
+Rivertowne 12
+Columbia 14
+Courthouse Plaza 8
+Worldgate 9
+Dine-in Theatres Buckhead 6
+North DeKalb Mall 16
+Sugarloaf Mills 18
+North Point Mall 12
+Mansell Crossing 14
+Phipps Plaza 14
+Colonial 18
+Rainbow Promenade 10
+Owasso 12
+Tyler Galleria 16
+La Jolla 12
+Cupertino Square 16
+Tustin 14 at The District
+Otay Ranch 12
+Loews Lexington Park 6
+Star Gratiot 21
+Star Holland 8
+Grand Rapids 18
+Star Southfield 20
+Dine-In Theatres Southlands 16 Featuring Red Kitchen
+Arapahoe Crossing 16
+Showplace Bloomington 12
+Showplace Bloomington 11
+Brighton 12
+University Place 8
+Showplace Carbondale 8
+Plaza 5
+Showplace Cicero 14
+Showplace Columbus 12
+Coon Rapids 16
+Village Mall 6
+Cherry Creek 8
+Star Dubuque 14
+Showplace Edwardsville 12
+Evansville 16
+Cinema Saver 6
+Showplace Hobart 12
+Indianapolis 17
+Showplace Traders Point 12
+Star Johnson Creek 12
+Showplace Manteca 16
+Showplace Muncie 12
+Showplace Naperville 16
+Showplace New Lenox 14
+Showplace Niles 12
+Twenty Mile 10
+Showplace Poplar Bluff 8
+Plaza Bonita 14
+Glendora 12
+Quincy Mall 3
+Orange 30
+Showplace Rockford 16
+Showplace Machesney Park 14
+Showplace Schererville 16
+Norwalk 20
+Showplace Village Crossing 18
+Showplace South Bend 16
+Fashion Valley 18
+Marina Marketplace 6
+Parkway 8
+Showplace Springfield 8
+Showplace Terre Haute 12
+Fiesta Square 16
+Baton Rouge 16
+Elmwood Palace 20
+Clearview Palace 12
+Houma Palace 10
+Forum 30
+Empire 25
+Disney Springs 24 with Dine-in Theatres
+Weston 8
+Sunrise 8
+Indian River 24
+Orange Park 24
+Aventura 24
+Tilghman Square 8
+River Park Square 20
+Kent Station 14
+Northlake 14
+Carolina Pavilion 22
+Concord Mills 24
+Southdale 16
+Arbor Lakes 16
+Stonecrest 16
+Starplex Southington 12
+Starplex Normal 14
+Salina 10
+Starplex Brazos 14
+Lawton 12
+Starplex Loudoun 11
+Starplex Mesquite 10
+East Pointe 12
+La Mirada 7
+Gateway 8
+Barton Creek Square 14
+Owings Mills 17
+Security Square 8
+Braintree 10
+Yorktown 18
+Ford City 14
+Northbrook Court 14
+South Bay Galleria 16
+Clifton Commons 16
+Bay Plaza Cinema 13
+Dine-In Theatres Bridgewater 7
+Philadelphia Mills 14
+Mazza Gallerie
+84th Street 6
+Loews Orpheum 7
+Village 7
+Loews Lincoln Square 13
+Levittown 10
+Loews Raceway 10
+Fantasy 5
+Loews Shore 8
+Loews Wayne 14
+Mountainside 10
+Loews Cherry Hill 24
+Loews New Brunswick 18
+Chula Vista 10
+Layton Hills 9
+Rockaway 16
+Universal Cineplex 20 (Orlando)
+Garden State 16
+Magic Johnson Harlem 9
+Atlantic Times Square 14
+Broadway 4
+Dine-in Theatres Marina 6
+Spring 10
+Loews Oak Tree 6
+Lakewood Mall 12
+Loews Crestwood 18
+600 North Michigan 9
+Streets of Woodfield 20
+Loews Danbury 16
+Loews Boston Common 19
+Loews Port Chester 14
+Loews Foothills 15
+Loews Uptown 1
+Loews Liberty Tree Mall 20
+St. Charles Town Center 9
+Shirlington 7
+Center Park 8
+Loews White Marsh 16
+John R 15
+Star Great Lakes 25
+Star Fairlane 21
+Castle Rock 12
+Showplace Galewood 14
+Council Bluffs 17
+Eastgate Showplace 6
+Showplace Farmington 4
+Fitchburg 18
+Showplace Galesburg 8
+Showplace Hamilton 8
+Showplace Washington Square 12
+Inver Grove 16
+Showplace Kokomo 12
+Desert Star 15
+Lake In The Hills 12
+Bowles Crossing 12
+Centre 8
+Showplace Marion 12
+Showplace Mattoon 10
+Showplace Michigan City 14
+Showplace Mt Vernon 8
+Showplace Pekin 14
+Quincy Showplace 6
+Showplace Richmond 11
+Showplace Schererville 12
+Showplace Springfield 12
+Honey Creek 8
+Showplace Vernon Hills 8
+Showplace Vincennes 8
+Assembly Row 12
+Oakwood Mall 8
+Festival Plaza 16
+Destin Commons 14
+Westroads 14
+Southpoint 17
+Grove City 14
+West Chester 18
+Brentwood 14
+Starplex Lake Worth 14
+Grand Island 7
+NewPark 12
+Starplex Hulen 10
+Springfield 11
+Starplex Ridgefield Park 12
+West End Pointe 8
+Starplex Corpus Christi 16
+Starplex Forney 12
+Northpark 7

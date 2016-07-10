@@ -40,7 +40,7 @@
       "slots": [
         {
         "name": "favoriteTheatre",
-        "type": "AMAZON.LITERAL"
+        "type": "THEATRENAME"
         }
       ]
     },
@@ -55,7 +55,7 @@
       "slots": [
         {
         "name": "theatreName",
-        "type": "AMAZON.LITERAL"
+        "type": "THEATRENAME"
         }
       ]
     },
@@ -65,7 +65,7 @@
       "slots": [
         {
         "name": "theatreName",
-        "type": "AMAZON.LITERAL"
+        "type": "THEATRENAME"
         }
       ]
     },
@@ -95,21 +95,15 @@
       "slots": [
         {
       		"name": "movieName",
-      		"type": "AMAZON.LITERAL"
+      		"type": "MOVIENAME"
         },
         {
       		"name": "weekday",
       		"type": "WEEKDAY"
-        }
-      ]
-    },
-
-    {
-      "intent": "GetMovieDetailsIntent",
-      "slots": [
+        },
         {
-      		"name": "movieName",
-      		"type": "AMAZON.LITERAL"
+          "name": "theatreName",
+          "type": "THEATRENAME"
         }
       ]
     }
