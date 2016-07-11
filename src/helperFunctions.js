@@ -1,6 +1,7 @@
 'use strict';
 var dateUtil = require('./dateFunctions'),
-    textHelper = require('./textHelper');
+    textHelper = require('./textHelper'),
+    numberUtil = require('./numberFunctions');
 
 var helperFunctions = (function () {
 
@@ -42,12 +43,27 @@ var helperFunctions = (function () {
             }
         },
 
+        getMatchingTheatre: function(localTheatres, theatreName) {
+            var theatre = { 'id': 0, 'name': null },
+                checkName = '';
+            // Loop through the theatres saved locally to find the theatre with the same name.
+            localTheatres.forEach(function(element) {
+                theatreName = numberUtil.parseNumbersInString(theatreName);
+                checkName = element.name.replace('AMC ', '').toLowerCase();
+                if(element.name.toLowerCase() == theatreName.toLowerCase() ||
+                                    checkName == theatreName.toLowerCase()) {
+                    theatre = { 'id': element.id, 'name': element.name };
+                }
+            }, this);
+            return theatre;
+        },
+
         /**
          * Takes a list of movies taken from the api response and builds
          * a string to return in the response.
         * Sorted by regular showing first, then 3-D showings.
          */
-        getShowtimeString: function(movies, currentTheatre) {
+        getShowtimeString: function(movies, currentTheatre, weekdayResponse) {
             var speechOutput = movies[0].movieName + ' is playing ' + weekdayResponse + ' at ',
                 regularShowtimes = new Array(),
                 threedeeShowtimes = new Array();

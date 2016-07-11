@@ -1,15 +1,21 @@
 SetLocationByZipCodeIntent {zipCode}
 SetLocationByZipCodeIntent my zip code is {zipCode}
 SetLocationByZipCodeIntent set my zip code to {zipCode}
+SetLocationByZipCodeIntent save my zip code as {zipCode}
 
 GetSavedZipCodeIntent what is my zip code
 
 SetLocationByCityStateIntent i am in {city} {state}
 SetLocationByCityStateIntent set my location to {city} {state}
 SetLocationByCityStateIntent set my location to {city} in {state}
+SetLocationByCityStateIntent save my location as {city} {state}
+SetLocationByCityStateIntent save my location as {city} in {state}
 SetLocationByCityStateIntent i live in {city} {state}
 SetLocationByCityStateIntent i live in {city} in {state}
 
+SetFavoriteTheatreIntent save my theatre as {favoriteTheatre}
+SetFavoriteTheatreIntent save my favorite theatre as {favoriteTheatre}
+SetFavoriteTheatreIntent save my preferred theatre as {favoriteTheatre}
 SetFavoriteTheatreIntent my theatre is {favoriteTheatre}
 SetFavoriteTheatreIntent my favorite theatre is {favoriteTheatre}
 SetFavoriteTheatreIntent my preferred theatre is {favoriteTheatre}
@@ -31,52 +37,69 @@ GetAddressOfTheatreIntent what is the address of {theatreName}
 GetAddressOfTheatreIntent what is the address for {theatreName}
 GetAddressOfTheatreIntent give me the address of {theatreName}
 GetAddressOfTheatreIntent give me the address for {theatreName}
+GetAddressOfTheatreIntent how do I get to {theatreName}
 
 ListLocalTheatresIntent what theatres are in my area
 ListLocalTheatresIntent what theatres are in my hometown
+ListLocalTheatresIntent what theatres are in my town
+ListLocalTheatresIntent what theatres are in my city
 ListLocalTheatresIntent what theatres are near me
 ListLocalTheatresIntent what theatres are there
 ListLocalTheatresIntent what theatres are there here
+ListLocalTheatresIntent what theatres are there near me
 ListLocalTheatresIntent what theatres are here
+ListLocalTheatresIntent what theatres are near by
+ListLocalTheatresIntent what theatres are close by
 
-NowPlayingIntent What is playing right now
-NowPlayingIntent What movies are playing right now
-NowPlayingIntent What is playing {weekday}
-NowPlayingIntent What is playing on {weekday}
-NowPlayingIntent What movies are playing on {weekday}
-NowPlayingIntent What movies are playing next {weekday}
+NowPlayingIntent what movies are playing
+NowPlayingIntent what movies are playing now
+NowPlayingIntent what movies are playing right now
+NowPlayingIntent what movies are playing {weekday}
+NowPlayingIntent what movies are playing on {weekday}
+NowPlayingIntent what movies are playing next {weekday}
+NowPlayingIntent what movies are playing this {weekday}
+NowPlayingIntent what is playing
+NowPlayingIntent what is playing now
+NowPlayingIntent what is playing right now
+NowPlayingIntent what is playing {weekday}
+NowPlayingIntent what is playing on {weekday}
+NowPlayingIntent what is playing next {weekday}
+NowPlayingIntent what is playing this {weekday}
 
-ComingSoonIntent What is coming soon
-ComingSoonIntent What movies are coming soon
-ComingSoonIntent What movies are coming out
-ComingSoonIntent What movies are coming next
-ComingSoonIntent What is playing in the future
-ComingSoonIntent What is coming in the future
-ComingSoonIntent What movies are playing in the future
-ComingSoonIntent What movies are playing soon
-ComingSoonIntent What is coming soon
+ComingSoonIntent what is coming soon
+ComingSoonIntent what movies are coming soon
+ComingSoonIntent what movies are coming out
+ComingSoonIntent what movies are coming next
+ComingSoonIntent what is playing in the future
+ComingSoonIntent what is coming in the future
+ComingSoonIntent what movies are playing in the future
+ComingSoonIntent what movies are playing soon
+ComingSoonIntent what is coming soon
 
-GetMovieShowtimesIntent What time is {movieName} playing
-GetMovieShowtimesIntent What time is {movieName} playing {weekday}
-GetMovieShowtimesIntent What time is {movieName} playing {weekday} at {theatreName}
-GetMovieShowtimesIntent When is {movieName} playing
-GetMovieShowtimesIntent When is {movieName} playing {weekday}
-GetMovieShowtimesIntent When is {movieName} playing {weekday} at {theatreName}
-GetMovieShowtimesIntent What time is {movieName} playing on {weekday}
-GetMovieShowtimesIntent What time is {movieName} playing on {weekday} at {theatreName}
-GetMovieShowtimesIntent When is {movieName} playing on {weekday}
-GetMovieShowtimesIntent When is {movieName} playing on {weekday} at {theatreName}
-GetMovieShowtimesIntent What time is {movieName} playing at {theatreName}
+GetMovieShowtimesIntent what time is {movieName} playing
+GetMovieShowtimesIntent what time is {movieName} playing {weekday}
+GetMovieShowtimesIntent what time is {movieName} playing {weekday} at {theatreName}
+GetMovieShowtimesIntent when is {movieName} playing
+GetMovieShowtimesIntent when is {movieName} playing {weekday}
+GetMovieShowtimesIntent when is {movieName} playing {weekday} at {theatreName}
+GetMovieShowtimesIntent what time is {movieName} playing on {weekday}
+GetMovieShowtimesIntent what time is {movieName} playing on {weekday} at {theatreName}
+GetMovieShowtimesIntent when is {movieName} playing on {weekday}
+GetMovieShowtimesIntent when is {movieName} playing on {weekday} at {theatreName}
+GetMovieShowtimesIntent what time is {movieName} playing at {theatreName}
 
-GetMovieSynopsis What is {movieName} about
-GetMovieSynopsis What is the plot of {movieName}
-GetMovieSynopsis What is the synopsis of {movieName}
+GetMovieSynopsis what is {movieName} about
+GetMovieSynopsis what is the plot of {movieName}
+GetMovieSynopsis what is the synopsis of {movieName}
+GetMovieSynopsis tell me about {movieName}
+GetMovieSynopsis tell me more about {movieName}
 
-GetMovieMPAARating What is {movieName} rated
-GetMovieMPAARating What is the rating of {movieName}
-GetMovieMPAARating What is the rating for {movieName}
-GetMovieMPAARating What is the mmpaa rating of {movieName}
-GetMovieMPAARating What is the mpaa rating for {movieName}
+GetMovieMPAARating what is {movieName} rated
+GetMovieMPAARating what is the rating of {movieName}
+GetMovieMPAARating what is the rating for {movieName}
+GetMovieMPAARating what is the mmpaa rating of {movieName}
+GetMovieMPAARating what is the mpaa rating for {movieName}
 
 GetMovieRunTime how long is {movieName}
 GetMovieRunTime what is the run time of {movieName}
+GetMovieRunTime what is the length of {movieName}
