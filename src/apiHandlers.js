@@ -1,19 +1,19 @@
-var https = require('https');
-
 /*
  * Uses the AMC API, documented: http://developers.amctheatres.com/GettingStarted/Authentication
  */
 'use strict';
+var https = require('https'),
+    textHelper = require('./textHelper');
 
 var apiHandlers = (function () {
     return {
         makeRequest: function(request, apiResponseCallback) {
             //AMC api to fetch information about the theatre and movies.
-            var requestPath = "/v2/" + request;
+            var requestPath = '/v2/' + request;
             var options = {
-              host: "api.amctheatres.com",
+              host: 'api.amctheatres.com',
               path: requestPath,
-              headers: { "X-AMC-Vendor-Key": "[YOUR API KEY HERE]" },
+              headers: { 'X-AMC-Vendor-Key': '[YOUR API KEY HERE]' },
               agent: false
             };
             
@@ -27,26 +27,23 @@ var apiHandlers = (function () {
                 res.on('end', function () {
                     var apiResponseObject = JSON.parse(apiResponseString);
         
-                    if (apiResponseObject.error) {
-                        console.log("AMC API error: " + apiResponseObject.error.message);
-                        apiResponseCallback(new Error(apiResponseObject.error.message));
-                    } else if (apiResponseObject.errors) {
-                        console.log("AMC API error: " + apiResponseObject.errors.message);
-                        apiResponseCallback(new Error(apiResponseObject.errors.message));
+                    if (apiResponseObject.errors) {
+                        console.log('AMC API error: (' + apiResponseObject.errors[0].code + ') ' + apiResponseObject.errors[0].exceptionMessage);
+                        apiResponseCallback(textHelper.getErrorMessage(apiResponseObject.errors[0].code));
                     } else {
                         apiResponseCallback(null, apiResponseObject);
                     }
                 });
             }).on('error', function (e) {
-                console.log("Communications error: " + e.message);
+                console.log('Communications error: ' + e.message);
                 apiResponseCallback(new Error(e.message));
             });
         },
         fetchLocation: function(request, apiResponseCallback) {
             //Google Maps api to get the city and state from a zip code.
-            var requestPath = "/maps/api/geocode/json?" + request;
+            var requestPath = '/maps/api/geocode/json?' + request;
             var options = {
-              host: "maps.googleapis.com",
+              host: 'maps.googleapis.com',
               path: requestPath,
               agent: false
             };
@@ -61,15 +58,15 @@ var apiHandlers = (function () {
                 res.on('end', function () {
                     var apiResponseObject = JSON.parse(apiResponseString);
         
-                    if (apiResponseObject.error) {
-                        console.log("Google Maps API error: " + apiResponseObject.error.message);
-                        apiResponseCallback(new Error(apiResponseObject.error.message));
+                    if (apiResponseObject.error_message) {
+                        console.log('Google Maps API error: ' + apiResponseObject.error_message);
+                        apiResponseCallback(textHelper.errors.googleAPIUnavailable);
                     } else {
                         apiResponseCallback(null, apiResponseObject);
                     }
                 });
             }).on('error', function (e) {
-                console.log("Communications error: " + e.message);
+                console.log('Communications error: ' + e.message);
                 apiResponseCallback(new Error(e.message));
             });
         }

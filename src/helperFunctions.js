@@ -101,8 +101,11 @@ var helperFunctions = (function () {
                     speechOutput += time + ', ';
                 }, this);
             }
-            
-            return this.replaceLast(this.replaceLast(speechOutput, ', ', '.'), ',', ', and');
+            speechOutput = this.replaceLast(speechOutput, ', ', '.');
+            if(speechOutput.lastIndexOf(',') >= 0) {
+                speechOutput = this.replaceLast(speechOutput, ',', ', and');
+            }
+            return speechOutput;
         },
 
         /**

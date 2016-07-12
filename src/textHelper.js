@@ -17,12 +17,29 @@ var textHelper = (function () {
         errors: {
             googleAPIUnavailable: 'Sorry, the Google geocode API service is experiencing a problem. Please try again later.',
             amcAPIUnavailable: 'Sorry, the AMC API service is experiencing a problem. Please try again later.',
-            theatresNotFound: 'Unfortunately it doesn\'t look like there are any AMC theatres in your city. If the theatre that you regularly visit is in another city, please set your location to that city.',
+            theatreNotFound: 'Sorry, I couldn\t find that theatre.',
+            localTheatresNotFound: 'Unfortunately it doesn\'t look like there are any AMC theatres in your city. If the theatre that you regularly visit is in another city, please set your location to that city.',
             movieNotFound: 'Sorry, I couldn\'t find the movie you were looking for.',
             noShowtimesFound: 'Sorry, but I couldn\'t find any showtimes for that movie.',
-            misheardMovieTitle: 'I\'m sorry, I don\'t think I heard you correctly. What movie where you looking for?',
-            misheardTheatreName: '',
-            misheardDate: ''
+            misheardZipCode: 'Sorry, I did not hear your zip code, please say again?',
+            misheardCity: 'Sorry, I did not hear your zip code, please say again?',
+            misheardState: 'Sorry, I did not hear your zip code, please say again?',
+            misheardMovieTitle: 'Sorry, I don\'t think I heard you correctly. What movie where you looking for?',
+            misheardTheatreName: 'Sorry, I didn\'t hear you say a theatre, please say again?',
+            misheardDate: 'Sorry, I didn\'t hear you say a date, please say again?'
+        },
+        getErrorMessage: function(errCode) {
+            var errMessage = this.errors.amcAPIUnavailable;
+
+            if(errCode == 5104) {
+                errMessage = this.errors.theatreNotFound;
+            } else if(errCode == 5217) {
+                errMessage = this.errors.noShowtimesFound;
+            } else if(errCode == 5302) {
+                errMessage = this.errors.movieNotFound;
+            }
+
+            return errMessage;
         }
     };
 })();

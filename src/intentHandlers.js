@@ -32,8 +32,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
  * 
  *      api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
  *          if (err) { // Return error message.
- *              speechOutput = textHelper.errors.amcAPIUnavailable;
- *              cardOutput = speechOutput + ' ' + err;
+ *              console.log(err);
+ *              speechOutput = err;
+ *              cardOutput = speechOutput;
  *          } else {
  *              // Success.
  *              cardOutput = speechOutput;
@@ -71,13 +72,13 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             theatres = new Array();
 
         if (!zipCodeSlot || !zipCodeSlot.value) {
-            response.ask('sorry, I did not hear your zip code, please say again?');
+            response.ask(textHelper.errors.misheardZipCode);
             return;
         }
         var zipCode = parseInt(zipCodeSlot.value);
         if (isNaN(zipCode)) {
             console.log('Invalid zip code = ' + zipCode);
-            response.ask('sorry, I did not hear your zip code, please say again?');
+            response.ask(textHelper.errors.misheardZipCode);
             return;
         }
  
@@ -88,8 +89,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
 
             api.fetchLocation('address=' + zipCode, function apiResponseCallback(err, apiResponse) {
                 if (err) {
-                    speechOutput = textHelper.errors.googleAPIUnavailable;
-	                cardOutput = speechOutput + ' ' + err;
+                    console.log(err);
+                    speechOutput = err;
+                    cardOutput = speechOutput;
                 } else {
                     city  = apiResponse.results[0].address_components[1].long_name;
                     state = apiResponse.results[0].address_components[2].long_name;
@@ -101,15 +103,16 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     console.log('API Call: ' + callString);
                     api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                         if (err) {
-                            speechOutput = textHelper.errors.amcAPIUnavailable;
-	                        cardOutput = speechOutput + ' ' + err;
+                            console.log(err);
+                            speechOutput = err;
+                            cardOutput = speechOutput;
                         } else {
                             theatres = apiResponse._embedded.theatres;
 
                             currentTheatre.data.localTheatres = new Array();
                             
                             if(theatres.length < 1) {
-                                speechOutput += textHelper.errors.theatresNotFound;
+                                speechOutput += textHelper.errors.localTheatresNotFound;
                             } else {
                                 currentTheatre.data.location.utcOffset = theatres[0].utcOffset.replace(':', '.');
                                 theatres.forEach(function(element) {
@@ -181,11 +184,11 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             theatres = new Array();
 
         if (!citySlot || !citySlot.value) {
-            response.ask('sorry, I didn\'t hear a city name, please say again?');
+            response.ask(textHelper.errors.misheardCity);
             return;
         }
         if (!stateSlot || !stateSlot.value) {
-            response.ask('sorry, I didn\'t hear a state name, please say again?');
+            response.ask(textHelper.errors.misheardState);
             return;
         }
 
@@ -196,14 +199,15 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             console.log('API Call: ' + callString);
             api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                 if (err) {
-                    speechOutput = textHelper.errors.amcAPIUnavailable;
-                    cardOutput = speechOutput + ' ' + err;
+                    console.log(err);
+                    speechOutput = err;
+                    cardOutput = speechOutput;
                 } else {
                     theatres = apiResponse._embedded.theatres;
                     currentTheatre.data.localTheatres = new Array(); // Load the theatres into an array
                     
                     if(theatres.length < 1) {
-                        speechOutput += textHelper.errors.theatresNotFound;
+                        speechOutput += textHelper.errors.localTheatresNotFound;
                     } else {
                         currentTheatre.data.location.utcOffset = theatres[0].utcOffset.replace(':', '.');
                         theatres.forEach(function(element) {
@@ -268,13 +272,13 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * and saves it as the favorite to be used by default for showtimes.
      */
     intentHandlers.SetFavoriteTheatreIntent = function (intent, session, response) {
-        var speechOutput = 'I\'m sorry, I couldn\'t find any theatres with that name.',
+        var speechOutput = textHelper.errors.theatreNotFound,
             favoriteTheatreSlot = intent.slots.favoriteTheatre,
             favoriteTheatre = '',
             checkName = '';
         
         if (!favoriteTheatreSlot || !favoriteTheatreSlot.value) {
-            response.ask('sorry, I didn\'t hear you say a theatre, please say again?');
+            response.ask(textHelper.errors.misheardTheatreName);
             return;
         }
         favoriteTheatre = favoriteTheatreSlot.value;
@@ -328,7 +332,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         storage.loadTheatre(session, function (currentTheatre) {
                     
             if(currentTheatre.data.localTheatres.length < 1) {
-                speechOutput = textHelper.errors.theatresNotFound;
+                speechOutput = textHelper.errors.localTheatresNotFound;
             } else {
                 speechOutput += 'Here are the theatres I found in your city. ';
                 for(var i = 0, l = currentTheatre.data.localTheatres.length; i < l; i++) {
@@ -354,8 +358,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             theatreNameSlot = intent.slots.theatreName,
             theatre = { 'id': 0, 'name': null };
 
+        // Verify that the input slots have values.
         if (!theatreNameSlot || !theatreNameSlot.value) {
-            response.ask('sorry, I didn\'t hear you say a theatre, please say again?');
+            response.ask(textHelper.errors.misheardTheatreName);
             return;
         }
 
@@ -366,8 +371,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             console.log('API Call: ' + callString);
             api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                 if (err) {
-                    speechOutput = textHelper.errors.amcAPIUnavailable;
-                    cardOutput = speechOutput + ' ' + err;
+                    console.log(err);
+                    speechOutput = err;
+                    cardOutput = speechOutput;
                 } else {
                     speechOutput = 'The phone number for ' + theatre.name + ' is: ' + apiResponse.guestServicesPhoneNumber + '.';
                     cardOutput = speechOutput;
@@ -385,39 +391,29 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             cardOutput = '',
             callString = '',
             theatreNameSlot = intent.slots.theatreName,
-            theatreName = '',
-            theatreID =  0,
-            checkName = '';
+            theatre = {'id': 0, 'name': ''};
 
+        // Verify that the input slots have values.
         if (!theatreNameSlot || !theatreNameSlot.value) {
-            response.ask('sorry, I didn\'t hear you say a theatre, please say again?');
+            response.ask(textHelper.errors.misheardTheatreName);
             return;
         }
 
         storage.loadTheatre(session, function (currentTheatre) {
-            theatreID = currentTheatre.data.favoriteTheatre.id || 0;
-            theatreName = currentTheatre.data.favoriteTheatre.name || '';
+            theatre.name = theatreNameSlot.value || '';
 
             if (theatreNameSlot && theatreNameSlot.value) {
-                // Loop through the theatres saved locally to find the theatre with the same name.
-                currentTheatre.data.localTheatres.forEach(function(element) {
-                    theatreName = numberUtil.parseNumbersInString(theatreNameSlot.value);
-                    checkName = element.name.replace('AMC ', '').toLowerCase();
-                    if(element.name.toLowerCase() == theatreName.toLowerCase() ||
-                                        checkName == theatreName.toLowerCase()) {
-                        theatreID = element.id;
-                    }
-                }, this);
+                theatre = helperUtil.getMatchingTheatre(currentTheatre.data.localTheatres, theatre.name);
             }
-
-            speechOutput += 'The address for ' + theatreName + ' is: ';
+            speechOutput += 'The address for ' + theatre.name + ' is: ';
             
-            callString = 'theatres/' + theatreID;
+            callString = 'theatres/' + theatre.id;
             console.log('API Call: ' + callString);
             api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                 if (err) {
-                    speechOutput = textHelper.errors.amcAPIUnavailable;
-                    cardOutput = speechOutput + ' ' + err;
+                    console.log(err);
+                    speechOutput = err;
+                    cardOutput = speechOutput;
                 } else {
                     speechOutput += apiResponse.location.addressLine1 + ', ';
                     speechOutput += apiResponse.location.cityUrlSuffixText + ', ';
@@ -472,8 +468,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 console.log('API Call: ' + callString);
                 api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
                     if (err) {
-                        speechOutput = textHelper.errors.amcAPIUnavailable;
-                        cardOutput = speechOutput + ' ' + err;
+                        console.log(err);
+                        speechOutput = err;
+                        cardOutput = speechOutput;
                     } else {
                         movies = apiResponse._embedded.showtimes;
                         for(var i = 0, l = movies.length; i < l; i++) {
@@ -491,8 +488,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 console.log('API Call: movies/views/now-playing');
                 api.makeRequest('movies/views/now-playing', function apiResponseCallback(err, apiResponse) {
                     if (err) {
-                        speechOutput = textHelper.errors.amcAPIUnavailable;
-                        cardOutput = speechOutput + ' ' + err;
+                        console.log(err);
+                        speechOutput = err;
+                        cardOutput = speechOutput;
                     } else {
                         movies = apiResponse._embedded.movies;
                         for(var i = 0, l = movies.length; i < l; i++) {
@@ -524,8 +522,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             console.log('API Call: movies/views/coming-soon');
             api.makeRequest('movies/views/coming-soon', function apiResponseCallback(err, apiResponse) {
                 if (err) {
-                    speechOutput = textHelper.errors.amcAPIUnavailable;
-                    cardOutput = speechOutput + ' ' + err;
+                    console.log(err);
+                    speechOutput = err;
+                    cardOutput = speechOutput;
                 } else {
                     movies = apiResponse._embedded.movies;
                     for(var i = 0, l = movies.length; i < l; i++) {
@@ -561,8 +560,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
 
         // Verify that the input slots have values.
         if (!movieNameSlot || !movieNameSlot.value) {
-            speechOutput = textHelper.errors.misheardMovieTitle;
-            response.ask(speechOutput, 'What was that movie again?');
+            response.ask(textHelper.errors.misheardMovieTitle);
             return;
         }
         movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
@@ -584,45 +582,51 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 console.log('Using saved theatre');
             }
             
-            callString = 'theatres/' + theatre.id + '/showtimes/' + weekday + '/?movie=' + movieName;            
+
+            callString = 'movies/' + movieName;            
             console.log('API Call: ' + callString);
-            api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+            api.makeRequest(callString, function apiResponseCallback(err, movieResponse) {
                     
                 if (err) { // If there's an error finding the movie, try again, this time parsing the movie name for numbers.
                     movieName = numberUtil.parseNumbersInString(movieName);
-                    callString = 'theatres/' + theatre.id + '/showtimes/' + weekday + '/?movie=' + movieName;
-                    api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                    callString = 'movies/' + movieName;            
+                    api.makeRequest(callString, function apiResponseCallback(err, fixedMovieResponse) {
 
                         if (err) {
-                            if(err.code == 5217) {
-                                speechOutput = textHelper.errors.noShowtimesFound;
-                                cardOutput = speechOutput + ' ' + err;
-                            } else {
-                                speechOutput = textHelper.errors.amcAPIUnavailable;
-                                cardOutput = speechOutput + ' ' + err;
-                            }
-                        } else {
-                            movies = apiResponse._embedded.showtimes;
-                            
-                            if(movies.length < 1) {
-                                speechOutput = textHelper.errors.movieNotFound;
-                            } else {
-                                speechOutput += helperUtil.getShowtimeString(movies, currentTheatre, weekdayResponse);
-                            }
+                            console.log(err);
+                            speechOutput = err;
                             cardOutput = speechOutput;
+                            response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
+                        } else {
+                            callString = 'theatres/' + theatre.id + '/showtimes/' + weekday + '/?movie=' + movieName;            
+                            console.log('API Call: ' + callString);
+                            api.makeRequest(callString, function apiResponseCallback(err, theatreResponse) {
+                                movies = theatreResponse._embedded.showtimes;
+                                
+                                if(movies.length < 1) {
+                                    speechOutput = textHelper.errors.movieNotFound;
+                                } else {
+                                    speechOutput += helperUtil.getShowtimeString(movies, currentTheatre, weekdayResponse);
+                                }
+                                cardOutput = speechOutput + fixedMovieResponse.websiteUrl;
+                                response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
+                            });
                         }
-                        response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
                     });
                 } else {
-                    movies = apiResponse._embedded.showtimes;
-                    
-                    if(movies.length < 1) {
-                        speechOutput = textHelper.errors.movieNotFound;
-                    } else {
-                        speechOutput += helperUtil.getShowtimeString(movies, currentTheatre, weekdayResponse);
-                    }
-                    cardOutput = speechOutput;
-                    response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
+                    callString = 'theatres/' + theatre.id + '/showtimes/' + weekday + '/?movie=' + movieName;            
+                    console.log('API Call: ' + callString);
+                    api.makeRequest(callString, function apiResponseCallback(err, theatreResponse) {
+                        movies = theatreResponse._embedded.showtimes;
+                        
+                        if(movies.length < 1) {
+                            speechOutput = textHelper.errors.movieNotFound;
+                        } else {
+                            speechOutput += helperUtil.getShowtimeString(movies, currentTheatre, weekdayResponse);
+                        }
+                        cardOutput = speechOutput + movieResponse.websiteUrl;
+                        response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
+                    });
                 }
             });
         });
@@ -640,8 +644,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
 
         // Verify that the input slots have values.
         if (!movieNameSlot || !movieNameSlot.value) {
-            speechOutput = textHelper.errors.misheardMovieTitle;
-            response.ask(speechOutput, 'What was that movie again?');
+            response.ask(textHelper.errors.misheardMovieTitle);
             return;
         }
         movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
@@ -650,29 +653,25 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             
             callString = 'movies/' + movieName;            
             console.log('API Call: ' + callString);
-            api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+            api.makeRequest(callString, function apiResponseCallback(err, movieResponse) {
                     
                 if (err) { // If there's an error finding the movie, try again, this time parsing the movie name for numbers.
                     movieName = numberUtil.parseNumbersInString(movieName);
                     callString = 'movies/' + movieName;            
-                    api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                    api.makeRequest(callString, function apiResponseCallback(err, fixedMovieResponse) {
 
                         if (err) {
-                            if(err.code == 5302) {
-                                speechOutput = textHelper.errors.movieNotFound;
-                                cardOutput = speechOutput + ' ' + err;
-                            } else {
-                                speechOutput = textHelper.errors.amcAPIUnavailable;
-                                cardOutput = speechOutput + ' ' + err;
-                            }
+                            console.log(err);
+                            speechOutput = err;
+                            cardOutput = speechOutput;
                         } else {
-                            speechOutput = apiResponse.name + ': ' + apiResponse.synopsis;
+                            speechOutput = fixedMovieResponse.name + ': ' + fixedMovieResponse.synopsis;
                             cardOutput = speechOutput;
                         }
                         response.tellWithCard(speechOutput, 'AMC Movie Synopsis', cardOutput);
                     });
                 } else {
-                    speechOutput = apiResponse.name + ': ' + apiResponse.synopsis;
+                    speechOutput = movieResponse.name + ': ' + movieResponse.synopsis;
                     cardOutput = speechOutput;
                     response.tellWithCard(speechOutput, 'AMC Movie synopsis', cardOutput);
                 }
@@ -690,10 +689,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             movieNameSlot = intent.slots.movieName,
             movieName = '';
 
-            // Verify that the input slots have values.
+        // Verify that the input slots have values.
         if (!movieNameSlot || !movieNameSlot.value) {
-            speechOutput = textHelper.errors.misheardMovieTitle;
-            response.ask(speechOutput, 'What was that movie again?');
+            response.ask(textHelper.errors.misheardMovieTitle);
             return;
         }
         movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
@@ -702,29 +700,25 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             
             callString = 'movies/' + movieName;            
             console.log('API Call: ' + callString);
-            api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+            api.makeRequest(callString, function apiResponseCallback(err, movieResponse) {
                     
                 if (err) { // If there's an error finding the movie, try again, this time parsing the movie name for numbers.
                     movieName = numberUtil.parseNumbersInString(movieName);
                     callString = 'movies/' + movieName;            
-                    api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                    api.makeRequest(callString, function apiResponseCallback(err, fixedMovieResponse) {
 
                         if (err) {
-                            if(err.code == 5302) {
-                                speechOutput = textHelper.errors.movieNotFound;
-                                cardOutput = speechOutput + ' ' + err;
-                            } else {
-                                speechOutput = textHelper.errors.amcAPIUnavailable;
-                                cardOutput = speechOutput + ' ' + err;
-                            }
+                            console.log(err);
+                            speechOutput = err;
+                            cardOutput = speechOutput;
                         } else {
-                            speechOutput = apiResponse.name + ' is rated ' + apiResponse.mpaaRating;
+                            speechOutput = apiRespofixedMovieResponsense.name + ' is rated ' + fixedMovieResponse.mpaaRating;
                             cardOutput = speechOutput;
                         }
                         response.tellWithCard(speechOutput, 'AMC Movie MPAA Rating', cardOutput);
                     });
                 } else {
-                    speechOutput = apiResponse.name + ' is rated ' + apiResponse.mpaaRating;
+                    speechOutput = movieResponse.name + ' is rated ' + movieResponse.mpaaRating;
                     cardOutput = speechOutput;
                     response.tellWithCard(speechOutput, 'AMC Movie MPAA Rating', cardOutput);
                 }
@@ -742,10 +736,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             movieNameSlot = intent.slots.movieName,
             movieName = '';
 
-            // Verify that the input slots have values.
+        // Verify that the input slots have values.
         if (!movieNameSlot || !movieNameSlot.value) {
-            speechOutput = textHelper.errors.misheardMovieTitle;
-            response.ask(speechOutput, 'What was that movie again?');
+            response.ask(textHelper.errors.misheardMovieTitle);
             return;
         }
         movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
@@ -754,29 +747,25 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             
             callString = 'movies/' + movieName;            
             console.log('API Call: ' + callString);
-            api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+            api.makeRequest(callString, function apiResponseCallback(err, movieResponse) {
                     
                 if (err) { // If there's an error finding the movie, try again, this time parsing the movie name for numbers.
                     movieName = numberUtil.parseNumbersInString(movieName);
                     callString = 'movies/' + movieName;            
-                    api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                    api.makeRequest(callString, function apiResponseCallback(err, fixedMovieResponse) {
 
                         if (err) {
-                            if(err.code == 5302) {
-                                speechOutput = textHelper.errors.movieNotFound;
-                                cardOutput = speechOutput + ' ' + err;
-                            } else {
-                                speechOutput = textHelper.errors.amcAPIUnavailable;
-                                cardOutput = speechOutput + ' ' + err;
-                            }
+                            console.log(err);
+                            speechOutput = err;
+                            cardOutput = speechOutput;
                         } else {
-                            speechOutput = apiResponse.name + ' is ' + helperUtil.GetRunTimeString(apiResponse.runTime) + ' long';
+                            speechOutput = fixedMovieResponse.name + ' is ' + helperUtil.GetRunTimeString(fixedMovieResponse.runTime) + ' long';
                             cardOutput = speechOutput;
                         }
                         response.tellWithCard(speechOutput, 'AMC Movie Run Time', cardOutput);
                     });
                 } else {
-                    speechOutput = apiResponse.name + ' is ' + helperUtil.GetRunTimeString(apiResponse.runTime) + ' long';
+                    speechOutput = movieResponse.name + ' is ' + helperUtil.GetRunTimeString(movieResponse.runTime) + ' long';
                     cardOutput = speechOutput;
                     response.tellWithCard(speechOutput, 'AMC Movie Run Time', cardOutput);
                 }
