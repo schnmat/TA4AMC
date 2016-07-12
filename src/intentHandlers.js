@@ -49,35 +49,6 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
  */    
 
     /**
-     * This is the intent that is launched when the user first opens the skill.
-     * 
-     * If there is no data for the user, they're prompted to set their location
-     * so that they can find theatres in their hometown and see movies that
-     * are playing.
-     */
-    /*intentHandlers.NewTheatreIntent = function (intent, session, response) {
-        storage.loadTheatre(session, function (currentTheatre) {
-            if (currentTheatre.data.players.length === 0) {
-                response.ask('Welcome to AMC Theatres. What is your location?',
-                    'Please tell me your location, either by city and state, or by zip code, so that I can find showtimes in your local theatre.');
-                return;
-            }
-            
-            helperUtil.checkSessionVariables;
-            
-            currentTheatre.save(function () {
-                var speechOutput = 'Location ' + currentTheatre.data.location.state + ' saved.';
-                if (skillContext.needMoreHelp) {
-                    speechOutput += '. You can ask me what\'s playing right now, or get showtimes for a movie. What would you like?';
-                    response.ask(speechOutput);
-                } else {
-                    response.tell(speechOutput);
-                }
-            });
-        });
-    };*/
-
-    /**
      * Sets the users location based on a zip code that they've input.
      * 
      * Once their location is found and saved. The API is called to get

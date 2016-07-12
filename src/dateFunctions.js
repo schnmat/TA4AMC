@@ -244,19 +244,21 @@ var dateFunctions = (function () {
                 curDay = currentDate.getDate(),
                 curHours = currentDate.getHours(),
                 curMinutes = currentDate.getMinutes();
-
+            
+            console.log('Checking: ' + this.getFormattedTimeAmPm(date) +
+                        ' vs ' + this.getFormattedTimeAmPm(currentDate));
             if(day > curDay) {
                 return 1;
             } else if(day == curDay) {
-                if(	hours == curHours &&
-                    minutes == curMinutes ) {
+                if(hours == curHours && minutes == curMinutes) {
                     return 0;
-                } else if(	hours >= curHours &&
-                            minutes > curMinutes ) {
+                } else if(hours > curHours ||
+                            (hours == curHours && minutes > curMinutes) ) {
                     return 1;
                 }
             }
-
+            
+            console.log('Made it through');
             return -1;
         }
     }

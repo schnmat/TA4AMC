@@ -102,7 +102,7 @@ var helperFunctions = (function () {
                 }, this);
             }
             
-            return this.replaceLast(speechOutput, ', ', '.');
+            return this.replaceLast(this.replaceLast(speechOutput, ', ', '.'), ',', ', and');
         },
 
         /**
