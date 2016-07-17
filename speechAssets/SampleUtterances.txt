@@ -103,3 +103,6 @@ GetMovieMPAARating what is the mpaa rating for {movieName}
 GetMovieRunTime how long is {movieName}
 GetMovieRunTime what is the run time of {movieName}
 GetMovieRunTime what is the length of {movieName}
+
+GetMovieTrailer get me the trailer for {movieName}
+GetMovieTrailer give me the trailer for {movieName}

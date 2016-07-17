@@ -136,6 +136,16 @@
       		"type": "MOVIENAME"
         }
       ]
+    },
+
+    {
+      "intent": "GetMovieTrailer",
+      "slots": [
+        {
+      		"name": "movieName",
+      		"type": "MOVIENAME"
+        }
+      ]
     }
   ]
 }

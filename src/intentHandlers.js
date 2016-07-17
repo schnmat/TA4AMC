@@ -759,15 +759,62 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                             speechOutput = err;
                             cardOutput = speechOutput;
                         } else {
-                            speechOutput = fixedMovieResponse.name + ' is ' + helperUtil.GetRunTimeString(fixedMovieResponse.runTime) + ' long';
+                            speechOutput = fixedMovieResponse.name + ' is ' + helperUtil.getRunTimeString(fixedMovieResponse.runTime) + ' long';
                             cardOutput = speechOutput;
                         }
                         response.tellWithCard(speechOutput, 'AMC Movie Run Time', cardOutput);
                     });
                 } else {
-                    speechOutput = movieResponse.name + ' is ' + helperUtil.GetRunTimeString(movieResponse.runTime) + ' long';
+                    speechOutput = movieResponse.name + ' is ' + helperUtil.getRunTimeString(movieResponse.runTime) + ' long';
                     cardOutput = speechOutput;
                     response.tellWithCard(speechOutput, 'AMC Movie Run Time', cardOutput);
+                }
+            });
+        });
+    };
+
+    /**
+     * Gets a link to a movie trailer and puts in in the card.
+     */
+    intentHandlers.GetMovieTrailer = function (intent, session, response) {
+        var speechOutput = '',
+            cardOutput = '',
+            callString = '',
+            movieNameSlot = intent.slots.movieName,
+            movieName = '';
+
+        // Verify that the input slots have values.
+        if (!movieNameSlot || !movieNameSlot.value) {
+            response.ask(textHelper.errors.misheardMovieTitle);
+            return;
+        }
+        movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
+        
+        storage.loadTheatre(session, function (currentTheatre) {
+            
+            callString = 'movies/' + movieName;            
+            console.log('API Call: ' + callString);
+            api.makeRequest(callString, function apiResponseCallback(err, movieResponse) {
+                    
+                if (err) { // If there's an error finding the movie, try again, this time parsing the movie name for numbers.
+                    movieName = numberUtil.parseNumbersInString(movieName);
+                    callString = 'movies/' + movieName;            
+                    api.makeRequest(callString, function apiResponseCallback(err, fixedMovieResponse) {
+
+                        if (err) {
+                            console.log(err);
+                            speechOutput = err;
+                            cardOutput = speechOutput;
+                        } else {
+                            speechOutput = 'I put a link to the trailer for ' + fixedMovieResponse.name + ' in the card on your alexa app';
+                            cardOutput = 'Here is the trailer for: ' + fixedMovieResponse.name + ' ' + fixedMovieResponse.media.trailerHd;
+                        }
+                        response.tellWithCard(speechOutput, 'AMC Movie Trailer', cardOutput);
+                    });
+                } else {
+                    speechOutput = 'I put a link to the trailer for ' + movieResponse.name + ' in the card on your alexa app';
+                    cardOutput = 'Here is the trailer for: ' + movieResponse.name + ' ' + movieResponse.media.trailerHd;
+                    response.tellWithCard(speechOutput, 'AMC Movie Trailer', cardOutput);
                 }
             });
         });

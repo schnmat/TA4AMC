@@ -112,10 +112,10 @@ var helperFunctions = (function () {
          * Takes a number in minutes and returns a string of the length of time.
          */
         getRunTimeString: function(runtime) {
-            var output = '';
-            var hours = Math.floor(runtime / 60);
-            var minutes = runtime - (hours * 60);
-            
+            var output = '',
+                hours = Math.floor(runtime / 60),
+                minutes = runtime - (hours * 60);
+           
             if(hours > 0) {
                 if(hours == 1) {
                     output += hours + ' hour';
