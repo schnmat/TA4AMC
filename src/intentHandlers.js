@@ -125,12 +125,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                 } else {
                                     speechOutput += 'Here are the theatres I found in your city. The first one has been set as your favorite.';
                                     for(var i = 0, l = currentTheatre.data.localTheatres.length; i < l; i++) {
-                                        if(i == (l - 1)) {
-                                            speechOutput += 'and ' + currentTheatre.data.localTheatres[i].name + '. ';
-                                        } else {
-                                            speechOutput += currentTheatre.data.localTheatres[i].name + ', ';
-                                        }
+                                        speechOutput += currentTheatre.data.localTheatres[i].name + ', ';
                                     }
+
                                 }
                             }
 	                        cardOutput = speechOutput;
@@ -220,13 +217,13 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         } else {
                             speechOutput += 'Here are the theatres that I found in your city. The first one has been set as your favorite.';
                             for(var i = 0, l = currentTheatre.data.localTheatres.length; i < l; i++) {
-                                if(i == (l - 1)) {
-                                    speechOutput += 'and ' + currentTheatre.data.localTheatres[i].name + '. ';
-                                } else {
-                                    speechOutput += currentTheatre.data.localTheatres[i].name + ', ';
-                                }
+                                speechOutput += currentTheatre.data.localTheatres[i].name + ', ';
                             }
-                            
+                            speechOutput = helperUtil.replaceLast(speechOutput, ', ', '.');
+                            if(speechOutput.lastIndexOf(',') >= 0) {
+                                speechOutput = helperUtil.replaceLast(speechOutput, ',', ', and');
+                            }
+                                                        
                             // Set the city + state and default to what was requested if something goes wrong.
                             currentTheatre.data.location.city = theatres[0].location.city || citySlot.value;
                             currentTheatre.data.location.state = theatres[0].location.stateName || stateSlot.value;
@@ -336,11 +333,11 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             } else {
                 speechOutput += 'Here are the theatres I found in your city. ';
                 for(var i = 0, l = currentTheatre.data.localTheatres.length; i < l; i++) {
-                    if(i == (l - 1)) {
-                        speechOutput += 'and ' + currentTheatre.data.localTheatres[i].name + '. ';
-                    } else {
-                        speechOutput += currentTheatre.data.localTheatres[i].name + ', ';
-                    }
+                    speechOutput += currentTheatre.data.localTheatres[i].name + ', ';
+                }
+                speechOutput = helperUtil.replaceLast(speechOutput, ', ', '.');
+                if(speechOutput.lastIndexOf(',') >= 0) {
+                    speechOutput = helperUtil.replaceLast(speechOutput, ',', ', and');
                 }
                 cardOutput = speechOutput;
             }
@@ -462,7 +459,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             }
                     
             if(theatre.id > 0) {
-                speechOutput = 'Now playing at ' + theatre.name + '. ';
+                speechOutput = 'Now playing at ' + theatre.name + ': ';
                 
                 callString = 'theatres/' + theatre.id + '/showtimes/' + weekday;
                 console.log('API Call: ' + callString);
@@ -474,11 +471,13 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     } else {
                         movies = apiResponse._embedded.showtimes;
                         for(var i = 0, l = movies.length; i < l; i++) {
-                            if(i == (l - 1)) {
-                                speechOutput += 'and ' + movies[i].movieName + '. ';
-                            } else {
+                            if(speechOutput.indexOf(movies[i].movieName) < 0) {
                                 speechOutput += movies[i].movieName + ', ';
                             }
+                        }
+                        speechOutput = helperUtil.replaceLast(speechOutput, ', ', '.');
+                        if(speechOutput.lastIndexOf(',') >= 0) {
+                            speechOutput = helperUtil.replaceLast(speechOutput, ',', ', and');
                         }
                         cardOutput = speechOutput;
                     }
@@ -494,11 +493,13 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     } else {
                         movies = apiResponse._embedded.movies;
                         for(var i = 0, l = movies.length; i < l; i++) {
-                            if(i == (l - 1)) {
-                                speechOutput += 'and ' + movies[i].name + '. ';
-                            } else {
-                                speechOutput += movies[i].name + ', ';
+                            if(speechOutput.indexOf(movies[i].movieName) < 0) {
+                                speechOutput += movies[i].movieName + ', ';
                             }
+                        }
+                        speechOutput = helperUtil.replaceLast(speechOutput, ', ', '.');
+                        if(speechOutput.lastIndexOf(',') >= 0) {
+                            speechOutput = helperUtil.replaceLast(speechOutput, ',', ', and');
                         }
                         cardOutput = speechOutput;
                     }
@@ -514,7 +515,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * movies coming to a specific theatre. 
      */
     intentHandlers.ComingSoonIntent = function (intent, session, response) {
-        var speechOutput = 'Coming soon to a theatre near you.',
+        var speechOutput = 'Coming soon to a theatre near you: ',
             cardOutput = '',
             movies = new Array();
 
@@ -528,11 +529,13 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 } else {
                     movies = apiResponse._embedded.movies;
                     for(var i = 0, l = movies.length; i < l; i++) {
-                        if(i == (l - 1)) {
-                            speechOutput += 'and ' + movies[i].name + '. ';
-                        } else {
+                        if(speechOutput.indexOf(movies[i].name) < 0) {
                             speechOutput += movies[i].name + ', ';
                         }
+                    }
+                    speechOutput = helperUtil.replaceLast(speechOutput, ', ', '.');
+                    if(speechOutput.lastIndexOf(',') >= 0) {
+                        speechOutput = helperUtil.replaceLast(speechOutput, ',', ', and');
                     }
                     cardOutput = speechOutput;
                 }    
@@ -556,7 +559,8 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             weekday = new Date(),
             theatreNameSlot = intent.slots.theatreName,
             theatre = { 'id': 0, 'name': null },
-            movies = new Array();
+            movies = new Array(),
+            imageInfo = { 'smallImageUrl': null, 'largeImageUrl': null };
 
         // Verify that the input slots have values.
         if (!movieNameSlot || !movieNameSlot.value) {
@@ -623,6 +627,12 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                             speechOutput = textHelper.errors.movieNotFound;
                         } else {
                             speechOutput += helperUtil.getShowtimeString(movies, currentTheatre, weekdayResponse);
+                            
+                            /**
+                             * The AMC cdn doesn't meet Amazon's requirements to show images in the card.
+                             * imageInfo.smallImageUrl = movies[0].media.posterStandard;
+                             * imageInfo.largeImageUrl = movies[0].media.posterLarge;
+                             */
                         }
                         cardOutput = speechOutput + movieResponse.websiteUrl;
                         response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);

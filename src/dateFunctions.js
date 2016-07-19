@@ -201,7 +201,7 @@ var dateFunctions = (function () {
             nextDay.setDate(nextDay.getDate() + 1);
             var found = 0;
 
-            if(weekday.toLowerCase() == 'today') {
+            if(weekday.toLowerCase() == 'today'|| weekday.toLowerCase() == 'tonight') {
                 return this.getFormattedDate(today);
             } else if(weekday.toLowerCase() == 'tomorrow') {
                 return this.getFormattedDate(nextDay);

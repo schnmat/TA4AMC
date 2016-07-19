@@ -18,9 +18,7 @@ var registerEventHandlers = function (eventHandlers, skillContext) {
         storage.loadTheatre(session, function (currentTheatre) {
             var speechOutput = '',
                 reprompt;
-                
-            helperFunctions.checkSessionVariables(currentTheatre);
-                
+                            
             if (currentTheatre.data.location.zipCode < 1) {
                 speechOutput += 'Welcome to AMC Theatres, Please tell me your location.';
                 reprompt = 'Please tell me your location, either by city and state, or by zip code, so that I can find showtimes in your local theatre.';

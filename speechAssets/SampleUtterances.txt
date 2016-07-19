@@ -79,14 +79,14 @@ ComingSoonIntent what is coming soon
 GetMovieShowtimesIntent what time is {movieName} playing
 GetMovieShowtimesIntent what time is {movieName} playing {weekday}
 GetMovieShowtimesIntent what time is {movieName} playing {weekday} at {theatreName}
+GetMovieShowtimesIntent what time is {movieName} playing on {weekday}
+GetMovieShowtimesIntent what time is {movieName} playing on {weekday} at {theatreName}
+GetMovieShowtimesIntent what time is {movieName} playing at {theatreName}
 GetMovieShowtimesIntent when is {movieName} playing
 GetMovieShowtimesIntent when is {movieName} playing {weekday}
 GetMovieShowtimesIntent when is {movieName} playing {weekday} at {theatreName}
-GetMovieShowtimesIntent what time is {movieName} playing on {weekday}
-GetMovieShowtimesIntent what time is {movieName} playing on {weekday} at {theatreName}
 GetMovieShowtimesIntent when is {movieName} playing on {weekday}
 GetMovieShowtimesIntent when is {movieName} playing on {weekday} at {theatreName}
-GetMovieShowtimesIntent what time is {movieName} playing at {theatreName}
 
 GetMovieSynopsis what is {movieName} about
 GetMovieSynopsis what is the plot of {movieName}

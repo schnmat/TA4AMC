@@ -1,0 +1,30 @@
+Some theatre locations that can be used:
+https://www.amctheatres.com/movie-theatres
+ - Carbondale, Illinois 62901
+ - Kansas City, Missouri 64114
+ - Eden Prairie, Minnesota 55344
+ - Phoenix, Arizona 85044
+
+Functions in this build:
+ - Set location by zip code
+ - Set location by city/state
+ - Get saved zip code
+ - Get saved city/state
+ - Get a list of local theatres
+ - Set favorite/preferred theatre by name
+ - Get the name of the theatre that's saved as the favorite
+ - Get phone number of a theatre by theatre name
+ - Get address of a theatre by theatre name (with directions linked in the card)
+ - Get a list of movies coming soon
+ - Get the synopsis of a movie by the movie title
+ - Get the MPAA rating of a movie my the movie title
+ - Get the run time/length of a movie by the movie title
+ - Get a link to the trailer of a movie by the movie title
+
+ - Get a list of movies playing
+    - The date defaults to today, but other days can be chosen (e.g. tomorrow or friday).
+    - Defaults to the preferred theatre but other theatres can be chosen by adding "at {theatre name}"
+
+ - Get a list of showtimes for a movie by the movie title
+    - The date defaults to today, but other days can be chosen (e.g. tomorrow or friday).
+    - Defaults to the preferred theatre but other theatres can be chosen by adding "at {theatre name}"

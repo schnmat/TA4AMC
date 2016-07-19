@@ -117,7 +117,14 @@ Response.prototype = (function () {
                 }
             };
         }
-        if (options.cardTitle && options.cardContent) {
+        if (options.image) {
+            alexaResponse.card = {
+                type: "Standard",
+                title: options.cardTitle,
+                text: options.cardContent,
+                image: options.image
+            };
+        } else if (options.cardTitle && options.cardContent) {
             alexaResponse.card = {
                 type: "Simple",
                 title: options.cardTitle,
@@ -148,6 +155,16 @@ Response.prototype = (function () {
                 output: speechOutput,
                 cardTitle: cardTitle,
                 cardContent: cardContent,
+                shouldEndSession: true
+            }));
+        },
+        tellWithCardAndImage: function (speechOutput, cardTitle, cardContent, imageInfo) {
+            this._context.succeed(buildSpeechletResponse({
+                session: this._session,
+                output: speechOutput,
+                cardTitle: cardTitle,
+                cardContent: cardContent,
+                image: imageInfo,
                 shouldEndSession: true
             }));
         },
