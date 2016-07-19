@@ -30,6 +30,6 @@
 var SkillExtender = require('./SkillExtender');
 
 exports.handler = function (event, context) {
-    var SkillExtender = new SkillExtender();
-    SkillExtender.execute(event, context);
+    var skillExtender = new SkillExtender();
+    skillExtender.execute(event, context);
 };
