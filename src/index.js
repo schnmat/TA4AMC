@@ -10,33 +10,26 @@
 /**
  * Examples:
  * Dialog model:
- *  User: "Alexa, launch AMC."
- *  Alexa: "Welcome to AMC Theatres, Please tell me your zip code?"
- *  User: "My zip code is 12345"
- *  Alexa: "Thank you, saving zip code 12345. There are two theatres in your area, you can select a favorite one if you want."
- *  User: "Save AMC Showplace 8 as my favorite theatre."
- *  Alexa: "Thank you, I'm setting AMC Showplace 8 as your preferred theatre."
+ *  User: "Alexa, launch theatre assistant."
+ *  Alexa: "Welcome to AMC Theatres, Please tell me your location?"
+ *  User: "I live in {city} {state}"
+ *  Alexa: "Thank you, I found two theatres in your city, the first one has been set as your favorite."
+ *  [Alexa saves the found theatres to dynamoDB]
+ *  [Alexa lists any theatres found and exits]
  *
- *  (skill saves the data and ends)
- *
- *  User: "Alexa, ask AMC what's playing right now."
- *  Alexa: "Now playing in AMC Showplace 8 is: {List of movies}"
- *
- *  (skill session ends)
+ *  User: "Alexa, ask theatre assistant what's playing right now."
+ *  Alexa: "Now playing in {theatre name}: "
+ *  [Alexa lists the names of the movies found and exits]
  * 
- *  User: "Alexa, ask AMC when {movie} is playing."
- *  Alexa: "{Movie} is playing at 7 and 9 p.m. tonight, 10:30 tomorrow morning, and 1 and 4pm tomorrow afternoon."
- *
- *  (skill session ends)
- *
- * One-shot model:
- *  User: "Alexa, ask AMC when {movie} is playing in {town}."
- *  Alexa: "At {theatre}, {Movie} is playing at 7 and 9 p.m. tonight, 10:30 tomorrow morning, and 1 and 4pm tomorrow afternoon."
+ *  User: "Alexa, ask theatre assistant when {movie} is playing."
+ *  Alexa: "{movie name} is playing at: "
+ *  [Alexa lists showtimes for the movie, first in regular showtimes, followed by 3D showtimes and exits]
+ * 
  */
 'use strict';
-var TheatreKeeper = require('./theatreKeeper');
+var SkillExtender = require('./SkillExtender');
 
 exports.handler = function (event, context) {
-    var theatreKeeper = new TheatreKeeper();
-    theatreKeeper.execute(event, context);
+    var SkillExtender = new SkillExtender();
+    SkillExtender.execute(event, context);
 };

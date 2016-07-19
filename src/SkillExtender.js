@@ -9,23 +9,23 @@ var APP_ID = 'amzn1.echo-sdk-ams.app.[YOUR APP ID HERE]';//replace with "amzn1.e
 var skillContext = {};
 
 /**
- * TheatreKeeper is a child of AlexaSkill.
+ * SkillExtender is a child of AlexaSkill.
  * To read more about inheritance in JavaScript, see the link below.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Introduction_to_Object-Oriented_JavaScript#Inheritance
  */
-var TheatreKeeper = function () {
+var SkillExtender = function () {
     AlexaSkill.call(this, APP_ID);
     skillContext.needMoreHelp = true;
 };
 
 
 // Extend AlexaSkill
-TheatreKeeper.prototype = Object.create(AlexaSkill.prototype);
-TheatreKeeper.prototype.constructor = TheatreKeeper;
+SkillExtender.prototype = Object.create(AlexaSkill.prototype);
+SkillExtender.prototype.constructor = SkillExtender;
 
-eventHandlers.register(TheatreKeeper.prototype.eventHandlers, skillContext);
-intentHandlers.register(TheatreKeeper.prototype.intentHandlers, skillContext);
+eventHandlers.register(SkillExtender.prototype.eventHandlers, skillContext);
+intentHandlers.register(SkillExtender.prototype.intentHandlers, skillContext);
 
-module.exports = TheatreKeeper;
+module.exports = SkillExtender;
 
