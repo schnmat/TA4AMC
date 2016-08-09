@@ -296,14 +296,40 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 checkName = element.name.replace('AMC ', '').toLowerCase();
                 if(element.name.toLowerCase() == favoriteTheatre.toLowerCase() ||
                                     checkName == favoriteTheatre.toLowerCase()) {
-                    currentTheatre.data.favoriteTheatre = {'id':element.id,'name':element.name};            
+                    currentTheatre.data.favoriteTheatre = {'id': element.id, 'name': element.name};            
                     speechOutput = 'Thank you, saving your favorite theatre, ' + element.name + '. ';
                 }
             }, this);
 
-            currentTheatre.save(function () {
-                response.tellWithCard(speechOutput, 'AMC Favorite Theatre Request', speechOutput);
-            });
+            // Try and find the theatre if it couldn't be found in the saved local theatre list.
+            if(currentTheatre.id == 0) {
+                favoriteTheatre = helperUtil.replaceAll(theatre.name, ' ', '-');
+
+                // Find the theatre to look in:
+                callStrings.push('theatres/' + favoriteTheatre);
+                callStrings.push('theatres/amc-' + favoriteTheatre); 
+                callStrings.push('theatres/' + numberUtil.parseNumbersInString(favoriteTheatre));
+                callStrings.push('theatres/amc-' + numberUtil.parseNumbersInString(favoriteTheatre));
+
+                console.log('API Call: ' + callStrings);
+                api.tryMultipleRequests(callStrings, function apiResponseCallback(err, theatreResponse) {
+                    if (err) {
+                        console.log(err);
+                        speechOutput = err;
+                        cardOutput = speechOutput;
+                        response.tellWithCard(speechOutput, 'AMC Favorite Theatre Request', cardOutput);
+                    } else {
+                        currentTheatre.data.favoriteTheatre = {'id': theatreResponse.id, 'name': theatreResponse.name};
+                        currentTheatre.save(function () {
+                            response.tellWithCard(speechOutput, 'AMC Favorite Theatre Request', speechOutput);
+                        });
+                    }
+                });
+            } else {
+                currentTheatre.save(function () {
+                    response.tellWithCard(speechOutput, 'AMC Favorite Theatre Request', speechOutput);
+                });
+            }
         });
     };
     
@@ -360,6 +386,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         var speechOutput = '',
             cardOutput = '',
             callString = '',
+            callStrings = new Array(),
             theatreNameSlot = intent.slots.theatreName,
             theatre = { 'id': 0, 'name': '' };
 
@@ -372,19 +399,55 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         storage.loadTheatre(session, function (currentTheatre) {
             theatre = helperUtil.getMatchingTheatre(currentTheatre.data.localTheatres, theatreNameSlot.value);
 
-            callString = 'theatres/' + theatre.id;
-            console.log('API Call: ' + callString);
-            api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
-                if (err) {
-                    console.log(err);
-                    speechOutput = err;
-                    cardOutput = speechOutput;
-                } else {
-                    speechOutput = 'The phone number for ' + theatre.name + ' is: ' + apiResponse.guestServicesPhoneNumber + '.';
-                    cardOutput = speechOutput;
-                }
-                response.tellWithCard(speechOutput, 'AMC Theatre Phone Number', cardOutput);
-            });
+            if(theatre.id > 0) {
+                callString = 'theatres/' + theatre.id;
+                console.log('API Call: ' + callString);
+                api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                    if (err) {
+                        console.log(err);
+                        speechOutput = err;
+                        cardOutput = speechOutput;
+                    } else {
+                        speechOutput = 'The phone number for ' + apiResponse.name + ' is: ' + apiResponse.guestServicesPhoneNumber + '.';
+                        cardOutput = speechOutput;
+                    }
+                    response.tellWithCard(speechOutput, 'AMC Theatre Phone Number', cardOutput);
+                });
+            } else {
+                theatre.name = helperUtil.replaceAll(theatreNameSlot.value, ' ', '-');
+
+                // Find the theatre to look in:
+                callStrings.push('theatres/' + theatre.name);
+                callStrings.push('theatres/amc-' + theatre.name); 
+                callStrings.push('theatres/' + numberUtil.parseNumbersInString(theatre.name));
+                callStrings.push('theatres/amc-' + numberUtil.parseNumbersInString(theatre.name));
+
+                console.log('API Call: ' + callStrings);
+                api.tryMultipleRequests(callStrings, function apiResponseCallback(err, theatreResponse) {
+                    if (err) {
+                        console.log(err);
+                        speechOutput = err;
+                        cardOutput = speechOutput;
+                        response.tellWithCard(speechOutput, 'AMC Theatre Phone Number', cardOutput);
+                    } else {
+                        theatre.id = theatreResponse.id;
+
+                        callString = 'theatres/' + theatre.id;
+                        console.log('API Call: ' + callString);
+                        api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                            if (err) {
+                                console.log(err);
+                                speechOutput = err;
+                                cardOutput = speechOutput;
+                            } else {
+                                speechOutput = 'The phone number for ' + apiResponse.name + ' is: ' + apiResponse.guestServicesPhoneNumber + '.';
+                                cardOutput = speechOutput;
+                            }
+                            response.tellWithCard(speechOutput, 'AMC Theatre Phone Number', cardOutput);
+                        });
+                    }
+                });
+            }
         });
     };
 
@@ -395,6 +458,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         var speechOutput = '',
             cardOutput = '',
             callString = '',
+            callStrings = new Array(),
             theatreNameSlot = intent.slots.theatreName,
             theatre = {'id': 0, 'name': ''};
 
@@ -407,29 +471,81 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         storage.loadTheatre(session, function (currentTheatre) {
             theatre.name = theatreNameSlot.value || '';
 
+            // Optional. Defaults to the favorite theatre.
             if (theatreNameSlot && theatreNameSlot.value) {
-                theatre = helperUtil.getMatchingTheatre(currentTheatre.data.localTheatres, theatre.name);
-            }
-            speechOutput += 'The address for ' + theatre.name + ' is: ';
-            
-            callString = 'theatres/' + theatre.id;
-            console.log('API Call: ' + callString);
-            api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
-                if (err) {
-                    console.log(err);
-                    speechOutput = err;
-                    cardOutput = speechOutput;
-                } else {
-                    speechOutput += apiResponse.location.addressLine1 + ', ';
-                    speechOutput += apiResponse.location.cityUrlSuffixText + ', ';
-                    speechOutput += apiResponse.location.stateUrlSuffixText + '.';
-                    cardOutput = speechOutput;
-
-                    speechOutput += ' See the card for a link to get directions.';
-                    cardOutput += ' Directions ' + apiResponse.location.directionsUrl + '.';
+                theatre = helperUtil.getMatchingTheatre(currentTheatre.data.localTheatres, theatreNameSlot.value);
+                
+                if(theatre.id == 0) {
+                    console.log('No local theatre: ' + theatreNameSlot.value);
+                    theatre.name = theatreNameSlot.value;
                 }
-                response.tellWithCard(speechOutput, 'AMC Theatre Address', cardOutput);
-            });
+            } else {
+                theatre.id = currentTheatre.data.favoriteTheatre.id;
+                theatre.name = currentTheatre.data.favoriteTheatre.name;
+            }
+
+            if (theatre.id > 0) {
+                speechOutput += 'The address for ' + theatre.name + ' is: ';
+                
+                callString = 'theatres/' + theatre.id;
+                console.log('API Call: ' + callString);
+                api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                    if (err) {
+                        console.log(err);
+                        speechOutput = err;
+                        cardOutput = speechOutput;
+                    } else {
+                        speechOutput += apiResponse.location.addressLine1 + ', ';
+                        speechOutput += apiResponse.location.cityUrlSuffixText + ', ';
+                        speechOutput += apiResponse.location.stateUrlSuffixText + '.';
+                        cardOutput = speechOutput;
+
+                        speechOutput += ' See the card for a link to get directions.';
+                        cardOutput += ' Directions ' + apiResponse.location.directionsUrl + '.';
+                    }
+                    response.tellWithCard(speechOutput, 'AMC Theatre Address', cardOutput);
+                });
+            } else {
+                theatre.name = helperUtil.replaceAll(theatreNameSlot.value, ' ', '-');
+
+                // Find the theatre to look in:
+                callStrings.push('theatres/' + theatre.name);
+                callStrings.push('theatres/amc-' + theatre.name); 
+                callStrings.push('theatres/' + numberUtil.parseNumbersInString(theatre.name));
+                callStrings.push('theatres/amc-' + numberUtil.parseNumbersInString(theatre.name));
+
+                console.log('API Call: ' + callStrings);
+                api.tryMultipleRequests(callStrings, function apiResponseCallback(err, theatreResponse) {
+                    if (err) {
+                        console.log(err);
+                        speechOutput = err;
+                        cardOutput = speechOutput;
+                        response.tellWithCard(speechOutput, 'AMC Theatre Address', cardOutput);
+                    } else {
+                        theatre.id = theatreResponse.id;
+                
+                        callString = 'theatres/' + theatre.id;
+                        console.log('API Call: ' + callString);
+                        api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                            if (err) {
+                                console.log(err);
+                                speechOutput = err;
+                                cardOutput = speechOutput;
+                            } else {
+                                speechOutput += 'The address for ' + apiResponse.name + ' is: ';
+                                speechOutput += apiResponse.location.addressLine1 + ', ';
+                                speechOutput += apiResponse.location.cityUrlSuffixText + ', ';
+                                speechOutput += apiResponse.location.stateUrlSuffixText + '.';
+                                cardOutput = speechOutput;
+
+                                speechOutput += ' See the card for a link to get directions.';
+                                cardOutput += ' Directions ' + apiResponse.location.directionsUrl + '.';
+                            }
+                            response.tellWithCard(speechOutput, 'AMC Theatre Address', cardOutput);
+                        });
+                    }
+                });
+            }
         });
     };
     
@@ -460,10 +576,13 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             // Optional. Defaults to the favorite theatre.
             if (theatreNameSlot && theatreNameSlot.value) {
                 theatre = helperUtil.getMatchingTheatre(currentTheatre.data.localTheatres, theatreNameSlot.value);
+                
+                if(theatre.id == 0) {
+                    console.log('No local theatre: ' + theatreNameSlot.value);
+                    theatre.name = theatreNameSlot.value;
+                }
             } else {
                 theatre.id = currentTheatre.data.favoriteTheatre.id;
-                theatre.name = currentTheatre.data.favoriteTheatre.name;
-                console.log('Using saved theatre');
             }
                     
             if(theatre.id > 0) {
@@ -586,8 +705,8 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             try {
                 weekday = dateUtil.getDayFromString(weekdayResponse, currentTheatre.data.location.utcOffset);
             } catch(err) {
-                response.tell(textHelper.errors.misheardDate);
                 console.log(err);
+                response.tell(textHelper.errors.misheardDate);
             }
 
             // Optional. Defaults to the favorite theatre.
@@ -596,12 +715,8 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 
                 if(theatre.id == 0) {
                     console.log('No local theatre: ' + theatreNameSlot.value);
-
-                    if(theatreNameSlot.value != 'village on the parkway 9') {
-                        theatre.name = theatreNameSlot.value;
-                    }
+                    theatre.name = theatreNameSlot.value;
                 }
-
             } else {
                 theatre.id = currentTheatre.data.favoriteTheatre.id;
             }
@@ -656,7 +771,6 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                         console.log(err);
                                         speechOutput = err;
                                         cardOutput = speechOutput;
-                                        response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
                                     } else {
                                         movies = theatreResponse._embedded.showtimes;
                                         
@@ -700,7 +814,6 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                 console.log(err);
                                 speechOutput = err;
                                 cardOutput = speechOutput;
-                                response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
                             } else {
                                 movies = theatreResponse._embedded.showtimes;
                                 
@@ -725,7 +838,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
     intentHandlers.GetMovieSynopsis = function (intent, session, response) {
         var speechOutput = '',
             cardOutput = '',
-            callString = '',
+            callStrings = new Array(),
             movieNameSlot = intent.slots.movieName,
             movieName = '';
 
@@ -737,30 +850,19 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
         
         storage.loadTheatre(session, function (currentTheatre) {
-            
-            callString = 'movies/' + movieName;            
-            console.log('API Call: ' + callString);
-            api.makeRequest(callString, function apiResponseCallback(err, movieResponse) {
-                    
-                if (err) { // If there's an error finding the movie, try again, this time parsing the movie name for numbers.
-                    movieName = numberUtil.parseNumbersInString(movieName);
-                    callString = 'movies/' + movieName;            
-                    api.makeRequest(callString, function apiResponseCallback(err, fixedMovieResponse) {
-                        if (err) {
-                            console.log(err);
-                            speechOutput = err;
-                            cardOutput = speechOutput;
-                        } else {
-                            speechOutput = fixedMovieResponse.name + ': ' + fixedMovieResponse.synopsis;
-                            cardOutput = speechOutput;
-                        }
-                        response.tellWithCard(speechOutput, 'AMC Movie Synopsis', cardOutput);
-                    });
-                } else {
-                    speechOutput = movieResponse.name + ': ' + movieResponse.synopsis;
+            callStrings.push('movies/' + movieName);
+            callStrings.push('movies/' + numberUtil.parseNumbersInString(movieName));            
+            console.log('API Call: ' + callStrings);
+            api.tryMultipleRequests(callStrings, function apiResponseCallback(err, movieResponse) {
+                if (err) {
+                    console.log(err);
+                    speechOutput = err;
                     cardOutput = speechOutput;
-                    response.tellWithCard(speechOutput, 'AMC Movie synopsis', cardOutput);
+                } else {
+                    speechOutput = fixedMovieResponse.name + ': ' + fixedMovieResponse.synopsis;
+                    cardOutput = speechOutput;
                 }
+                response.tellWithCard(speechOutput, 'AMC Movie Synopsis', cardOutput);
             });
         });
     };
@@ -771,7 +873,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
     intentHandlers.GetMovieMPAARating = function (intent, session, response) {
         var speechOutput = '',
             cardOutput = '',
-            callString = '',
+            callStrings = new Array(),
             movieNameSlot = intent.slots.movieName,
             movieName = '';
 
@@ -783,31 +885,19 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
         
         storage.loadTheatre(session, function (currentTheatre) {
-            
-            callString = 'movies/' + movieName;            
-            console.log('API Call: ' + callString);
-            api.makeRequest(callString, function apiResponseCallback(err, movieResponse) {
-                    
-                if (err) { // If there's an error finding the movie, try again, this time parsing the movie name for numbers.
-                    movieName = numberUtil.parseNumbersInString(movieName);
-                    callString = 'movies/' + movieName;            
-                    api.makeRequest(callString, function apiResponseCallback(err, fixedMovieResponse) {
-
-                        if (err) {
-                            console.log(err);
-                            speechOutput = err;
-                            cardOutput = speechOutput;
-                        } else {
-                            speechOutput = apiRespofixedMovieResponsense.name + ' is rated ' + fixedMovieResponse.mpaaRating;
-                            cardOutput = speechOutput;
-                        }
-                        response.tellWithCard(speechOutput, 'AMC Movie MPAA Rating', cardOutput);
-                    });
-                } else {
-                    speechOutput = movieResponse.name + ' is rated ' + movieResponse.mpaaRating;
+            callStrings.push('movies/' + movieName);
+            callStrings.push('movies/' + numberUtil.parseNumbersInString(movieName));            
+            console.log('API Call: ' + callStrings);
+            api.tryMultipleRequests(callStrings, function apiResponseCallback(err, movieResponse) {
+                if (err) {
+                    console.log(err);
+                    speechOutput = err;
                     cardOutput = speechOutput;
-                    response.tellWithCard(speechOutput, 'AMC Movie MPAA Rating', cardOutput);
+                } else {
+                    speechOutput = apiRespofixedMovieResponsense.name + ' is rated ' + fixedMovieResponse.mpaaRating;
+                    cardOutput = speechOutput;
                 }
+                response.tellWithCard(speechOutput, 'AMC Movie MPAA Rating', cardOutput);
             });
         });
     };
@@ -818,7 +908,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
     intentHandlers.GetMovieRunTime = function (intent, session, response) {
         var speechOutput = '',
             cardOutput = '',
-            callString = '',
+            callStrings = new Array(),
             movieNameSlot = intent.slots.movieName,
             movieName = '';
 
@@ -830,31 +920,19 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
         
         storage.loadTheatre(session, function (currentTheatre) {
-            
-            callString = 'movies/' + movieName;            
-            console.log('API Call: ' + callString);
-            api.makeRequest(callString, function apiResponseCallback(err, movieResponse) {
-                    
-                if (err) { // If there's an error finding the movie, try again, this time parsing the movie name for numbers.
-                    movieName = numberUtil.parseNumbersInString(movieName);
-                    callString = 'movies/' + movieName;            
-                    api.makeRequest(callString, function apiResponseCallback(err, fixedMovieResponse) {
-
-                        if (err) {
-                            console.log(err);
-                            speechOutput = err;
-                            cardOutput = speechOutput;
-                        } else {
-                            speechOutput = fixedMovieResponse.name + ' is ' + helperUtil.getRunTimeString(fixedMovieResponse.runTime) + ' long';
-                            cardOutput = speechOutput;
-                        }
-                        response.tellWithCard(speechOutput, 'AMC Movie Run Time', cardOutput);
-                    });
+            callStrings.push('movies/' + movieName);
+            callStrings.push('movies/' + numberUtil.parseNumbersInString(movieName));            
+            console.log('API Call: ' + callStrings);
+            api.tryMultipleRequests(callStrings, function apiResponseCallback(err, movieResponse) {
+                if (err) {
+                    console.log(err);
+                    speechOutput = err;
+                    cardOutput = speechOutput;
                 } else {
                     speechOutput = movieResponse.name + ' is ' + helperUtil.getRunTimeString(movieResponse.runTime) + ' long';
                     cardOutput = speechOutput;
-                    response.tellWithCard(speechOutput, 'AMC Movie Run Time', cardOutput);
                 }
+                response.tellWithCard(speechOutput, 'AMC Movie Run Time', cardOutput);
             });
         });
     };
@@ -865,7 +943,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
     intentHandlers.GetMovieTrailer = function (intent, session, response) {
         var speechOutput = '',
             cardOutput = '',
-            callString = '',
+            callStrings = new Array(),
             movieNameSlot = intent.slots.movieName,
             movieName = '';
 
@@ -877,31 +955,19 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
         
         storage.loadTheatre(session, function (currentTheatre) {
-            
-            callString = 'movies/' + movieName;            
-            console.log('API Call: ' + callString);
-            api.makeRequest(callString, function apiResponseCallback(err, movieResponse) {
-                    
-                if (err) { // If there's an error finding the movie, try again, this time parsing the movie name for numbers.
-                    movieName = numberUtil.parseNumbersInString(movieName);
-                    callString = 'movies/' + movieName;            
-                    api.makeRequest(callString, function apiResponseCallback(err, fixedMovieResponse) {
-
-                        if (err) {
-                            console.log(err);
-                            speechOutput = err;
-                            cardOutput = speechOutput;
-                        } else {
-                            speechOutput = 'I put a link to the trailer for ' + fixedMovieResponse.name + ' in the card on your alexa app';
-                            cardOutput = 'Here is the trailer for: ' + fixedMovieResponse.name + ' ' + fixedMovieResponse.media.trailerHd;
-                        }
-                        response.tellWithCard(speechOutput, 'AMC Movie Trailer', cardOutput);
-                    });
+            callStrings.push('movies/' + movieName);
+            callStrings.push('movies/' + numberUtil.parseNumbersInString(movieName));            
+            console.log('API Call: ' + callStrings);
+            api.tryMultipleRequests(callStrings, function apiResponseCallback(err, movieResponse) {
+                if (err) {
+                    console.log(err);
+                    speechOutput = err;
+                    cardOutput = speechOutput;
                 } else {
                     speechOutput = 'I put a link to the trailer for ' + movieResponse.name + ' in the card on your alexa app';
                     cardOutput = 'Here is the trailer for: ' + movieResponse.name + ' ' + movieResponse.media.trailerHd;
-                    response.tellWithCard(speechOutput, 'AMC Movie Trailer', cardOutput);
                 }
+                response.tellWithCard(speechOutput, 'AMC Movie Trailer', cardOutput);
             });
         });
     };

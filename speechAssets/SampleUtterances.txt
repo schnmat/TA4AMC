@@ -36,6 +36,7 @@ GetFavoriteTheatreIntent what is my saved theatre
 
 GetPhoneNumberForTheatreIntent what is the phone number for {theatreName}
 GetPhoneNumberForTheatreIntent give me the phone number for {theatreName}
+GetPhoneNumberForTheatreIntent get me the phone number for {theatreName}
 
 GetAddressOfTheatreIntent what is the address of {theatreName}
 GetAddressOfTheatreIntent what is the address for {theatreName}
