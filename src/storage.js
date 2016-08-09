@@ -18,11 +18,11 @@ var storage = (function () {
             this.data = {
                 localTheatres: new Array(),
                 location: { 'zipCode': 0,
-                            'city': null,
-                            'state': null,
-                            'utcOffset': '-5:00' },
+                            'city': '',
+                            'state': '',
+                            'utcOffset': '-5.00' },
                 favoriteTheatre: { 'id': 0,
-                                   'name': null }
+                                   'name': '' }
             };
         }
         this._session = session;

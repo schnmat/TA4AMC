@@ -1,3 +1,6 @@
+EndIntent cancel
+EndIntent stop
+
 SetLocationByZipCodeIntent {zipCode}
 SetLocationByZipCodeIntent my zip code is {zipCode}
 SetLocationByZipCodeIntent set my zip code to {zipCode}
@@ -5,6 +8,7 @@ SetLocationByZipCodeIntent save my zip code as {zipCode}
 
 GetSavedZipCodeIntent what is my zip code
 
+SetLocationByCityStateIntent {city} {state}
 SetLocationByCityStateIntent i am in {city} {state}
 SetLocationByCityStateIntent set my location to {city} {state}
 SetLocationByCityStateIntent set my location to {city} in {state}

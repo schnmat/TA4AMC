@@ -23,13 +23,13 @@ var helperFunctions = (function () {
                 data.location.zipCode = 0;
             }
             if(!data.location.hasOwnProperty('city')) {
-                data.location.city = null;
+                data.location.city = '';
             }
             if(!data.location.hasOwnProperty('state')) {
-                data.location.state = null;
+                data.location.state = '';
             }
             if(!data.location.hasOwnProperty('utcOffset')) {
-                data.location.utcOffset = '-5:00';
+                data.location.utcOffset = '-5.00';
             }
 
             if(!data.hasOwnProperty('favoriteTheatre')) {
@@ -39,12 +39,12 @@ var helperFunctions = (function () {
                 data.favoriteTheatre.id = 0;
             }
             if(!data.favoriteTheatre.hasOwnProperty('name')) {
-                data.favoriteTheatre.name = null;
+                data.favoriteTheatre.name = '';
             }
         },
 
         getMatchingTheatre: function(localTheatres, theatreName) {
-            var theatre = { 'id': 0, 'name': null },
+            var theatre = { 'id': 0, 'name': '' },
                 checkName = '';
             // Loop through the theatres saved locally to find the theatre with the same name.
             localTheatres.forEach(function(element) {

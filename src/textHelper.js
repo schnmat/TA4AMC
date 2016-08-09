@@ -18,21 +18,25 @@ var textHelper = (function () {
             googleAPIUnavailable: 'Sorry, the Google geocode API service is experiencing a problem. Please try again later.',
             amcAPIUnavailable: 'Sorry, the AMC API service is experiencing a problem. Please try again later.',
             theatreNotFound: 'Sorry, I couldn\'t find that theatre.',
+            invalidTheatreID: 'Sorry, I\'m not sure what theatre I should be getting information from. Please tell me what theatre you want me to look at, or tell me your location to save a favorite theatre.',
             localTheatresNotFound: 'Unfortunately it doesn\'t look like there are any AMC theatres in your city. If the theatre that you regularly visit is in another city, please set your location to that city.',
             movieNotFound: 'Sorry, I couldn\'t find the movie you were looking for.',
             noShowtimesFound: 'Sorry, but I couldn\'t find any showtimes for that movie.',
-            misheardZipCode: 'Sorry, I did not hear your zip code, please say again?',
-            misheardCity: 'Sorry, I did not hear a city name, please say again?',
-            misheardState: 'Sorry, I did not hear a state name, please say again?',
+            misheardZipCode: 'Sorry, I did not hear your zip code',
+            misheardCity: 'Sorry, I did not hear a city name',
+            misheardState: 'Sorry, I did not hear a state name',
             misheardMovieTitle: 'Sorry, I don\'t think I heard you correctly. What movie where you looking for?',
-            misheardTheatreName: 'Sorry, I didn\'t hear you say a theatre, please say again?',
-            misheardDate: 'Sorry, I didn\'t hear you say a date, please say again?'
+            misheardTheatreName: 'Sorry, I didn\'t hear you say a theatre',
+            misheardDate: 'Sorry, I didn\'t hear you say a date',
+            reprompt: ', please say again?'
         },
         getErrorMessage: function(errCode) {
             var errMessage = this.errors.amcAPIUnavailable;
 
             if(errCode == 5104) {
                 errMessage = this.errors.theatreNotFound;
+            } else if(errCode == 5210) {
+                errMessage = this.errors.invalidTheatreID;
             } else if(errCode == 5217) {
                 errMessage = this.errors.noShowtimesFound;
             } else if(errCode == 5302) {

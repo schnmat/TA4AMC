@@ -5,6 +5,8 @@
  * Provides date and time utilities to format responses in
  * a manner appropriate for speech output.
  */
+'use strict';
+
 var dateFunctions = (function () {
 
     var DAYS_OF_MONTH = [
@@ -171,10 +173,12 @@ var dateFunctions = (function () {
          * slashes if that format is desired.
          */
         getTodaysDate: function(utcOffset, separator) {
+            var utcOffset = typeof utcOffset !== 'undefined' ? utcOffset : '0.00';
             return this.getFormattedDate(this.getLocalDate(utcOffset), separator);
         },
         // Returns the tomorrows date.
         getTomorrowsDate: function(utcOffset, separator) {
+            var utcOffset = typeof utcOffset !== 'undefined' ? utcOffset : '0.00';
             var tomorrow = this.getLocalDate(utcOffset);
             tomorrow.setDate(tomorrow.getDate() + 1);
             return this.getFormattedDate(tomorrow, separator);
@@ -185,6 +189,7 @@ var dateFunctions = (function () {
          * getFormattedTimeAmPm method.
          */
         getCurrentTime: function(utcOffset) {
+            var utcOffset = typeof utcOffset !== 'undefined' ? utcOffset : '0.00';
             return this.getFormattedTimeAmPm(this.getLocalDate(utcOffset));
         },
 
@@ -194,6 +199,7 @@ var dateFunctions = (function () {
          * in an api call (e.g. 06-06-2016)
          */
         getDayFromString: function(weekday, utcOffset) {
+            var utcOffset = typeof utcOffset !== 'undefined' ? utcOffset : '0.00';
             var today = this.getLocalDate(utcOffset, new Date()),
                 tomorrow = this.getLocalDate(utcOffset, new Date()),
             	nextDay = this.getLocalDate(utcOffset, new Date());
@@ -204,12 +210,13 @@ var dateFunctions = (function () {
             if(weekday.toLowerCase() == 'today'|| weekday.toLowerCase() == 'tonight') {
                 return this.getFormattedDate(today);
             } else if(weekday.toLowerCase() == 'tomorrow') {
-                return this.getFormattedDate(nextDay);
+                return this.getFormattedDate(tomorrow);
             } else {
 
                 while(found === 0) {
-                    var dayFound = DAYS_OF_WEEK[nextDay.getDay()].toLowerCase();
-                    if(dayFound == weekday.toLowerCase()) {
+                    var dayFound = DAYS_OF_WEEK[nextDay.getDay()];
+                    if(dayFound && (dayFound.toLowerCase() == weekday.toLowerCase())) {
+                        console.log('date match');
                         found = 1;
                         break;
                     } else {
@@ -236,6 +243,7 @@ var dateFunctions = (function () {
          * Returns -1 if it's before, 0 if it's equal to, and 1 if it's after.
          */
         afterCurrentTime: function (utcOffset, date) {
+            var utcOffset = typeof utcOffset !== 'undefined' ? utcOffset : '0.00';
             if(!date instanceof Date) { return -1; }
             var day = date.getDate(),
                 hours = date.getHours(),
