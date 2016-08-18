@@ -762,8 +762,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                 cardOutput = speechOutput;
                                 response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
                             } else {
-
-                                // Find the movie's showtimes.
+                                // Get the page size of the request.
                                 callString = 'theatres/' + theatre.id + '/showtimes/' + weekday + '/?movie=' + movieResponse.slug;            
                                 console.log('API Call: ' + callString);
                                 api.makeRequest(callString, function apiResponseCallback(err, theatreResponse) {
@@ -772,16 +771,27 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                         speechOutput = err;
                                         cardOutput = speechOutput;
                                     } else {
-                                        movies = theatreResponse._embedded.showtimes;
-                                        
-                                        if(movies.length < 1) {
-                                            speechOutput = textHelper.errors.movieNotFound;
-                                        } else {
-                                            speechOutput += helperUtil.getShowtimeString(movies, currentTheatre, weekdayResponse);
-                                        }
-                                        cardOutput = speechOutput + movieResponse.websiteUrl;
+                                        // Find the movie's showtimes.
+                                        callString = 'theatres/' + theatre.id + '/showtimes/' + weekday + '/?movie=' + movieResponse.slug + '&pageSize=' + theatreResponse.count;            
+                                        console.log('API Call: ' + callString);
+                                        api.makeRequest(callString, function apiResponseCallback(err, theatreResponse) {
+                                            if (err) {
+                                                console.log(err);
+                                                speechOutput = err;
+                                                cardOutput = speechOutput;
+                                            } else {
+                                                movies = theatreResponse._embedded.showtimes;
+                                                
+                                                if(movies.length < 1) {
+                                                    speechOutput = textHelper.errors.movieNotFound;
+                                                } else {
+                                                    speechOutput += helperUtil.getShowtimeString(movies, weekdayResponse);
+                                                }
+                                                cardOutput = speechOutput + movieResponse.websiteUrl;
+                                            }
+                                            response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
+                                        });
                                     }
-                                    response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
                                 });
                             }
                         });

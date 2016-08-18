@@ -63,20 +63,22 @@ var helperFunctions = (function () {
          * a string to return in the response.
         * Sorted by regular showing first, then 3-D showings.
          */
-        getShowtimeString: function(movies, currentTheatre, weekdayResponse) {
+        getShowtimeString: function(movies, weekdayResponse) {
             var speechOutput = movies[0].movieName + ' is playing ' + weekdayResponse + ' at ',
                 regularShowtimes = new Array(),
                 threedeeShowtimes = new Array();
 
             movies.forEach(function(movie) {
-                var showdate = dateUtil.getLocalDate(currentTheatre.data.location.utcOffset, new Date(movie.showDateTimeUtc));
-                var sellByDate = dateUtil.getLocalDate(currentTheatre.data.location.utcOffset, new Date(movie.sellUntilDateTimeUtc));
+                var utcOffset = this.replaceAll(movie.utcOffset, ':', '.');
+                var showDate = dateUtil.getLocalDate(utcOffset, new Date(movie.showDateTimeUtc));
+                var sellByDate = dateUtil.getLocalDate(utcOffset, new Date(movie.sellUntilDateTimeUtc));
 
-                if(dateUtil.afterCurrentTime(currentTheatre.data.location.utcOffset, sellByDate) > -1){
+                console.log('Showtime: ' + dateUtil.getFormattedTimeAmPm(showDate));
+                if(dateUtil.afterCurrentTime(utcOffset, sellByDate) > -1){
                     if(this.isMovieThreeDee(movie.attributes)) {
-                        threedeeShowtimes.push(dateUtil.getFormattedTimeAmPm(showdate));
+                        threedeeShowtimes.push(dateUtil.getFormattedTimeAmPm(showDate));
                     } else {
-                        regularShowtimes.push(dateUtil.getFormattedTimeAmPm(showdate));
+                        regularShowtimes.push(dateUtil.getFormattedTimeAmPm(showDate));
                     }
                 }
             }, this);
