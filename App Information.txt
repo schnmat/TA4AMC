@@ -1,4 +1,4 @@
-Some theatre locations that can be used:
+Some theatre locations that can be used for testing:
 https://www.amctheatres.com/movie-theatres
  - Carbondale, Illinois 62901
  - Kansas City, Missouri 64114
@@ -14,12 +14,11 @@ Functions in this build:
  - Set favorite/preferred theatre by name
  - Get the name of the theatre that's saved as the favorite
  - Get phone number of a theatre by theatre name
- - Get address of a theatre by theatre name (with directions linked in the card)
+ - Get address of a theatre by theatre name
  - Get a list of movies coming soon
  - Get the synopsis of a movie by the movie title
  - Get the MPAA rating of a movie my the movie title
  - Get the run time/length of a movie by the movie title
- - Get a link to the trailer of a movie by the movie title
 
  - Get a list of movies playing
     - The date defaults to today, but other days can be chosen (e.g. tomorrow or friday).

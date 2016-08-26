@@ -551,9 +551,6 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         speechOutput += apiResponse.location.cityUrlSuffixText + ', ';
                         speechOutput += apiResponse.location.stateUrlSuffixText + '.';
                         cardOutput = speechOutput;
-
-                        speechOutput += ' See the card for a link to get directions.';
-                        cardOutput += ' Directions ' + apiResponse.location.directionsUrl + '.';
                     }
 
                     currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
@@ -595,9 +592,6 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                 speechOutput += apiResponse.location.cityUrlSuffixText + ', ';
                                 speechOutput += apiResponse.location.stateUrlSuffixText + '.';
                                 cardOutput = speechOutput;
-
-                                speechOutput += ' See the card for a link to get directions.';
-                                cardOutput += ' Directions ' + apiResponse.location.directionsUrl + '.';
                             }
 
                             currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
@@ -866,7 +860,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                                 } else {
                                                     speechOutput += helperUtil.getShowtimeString(movies, weekdayResponse);
                                                 }
-                                                cardOutput = speechOutput + movieResponse.websiteUrl;
+                                                cardOutput = speechOutput;
                                             }
 
                                             currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
@@ -917,7 +911,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                 } else {
                                     speechOutput += helperUtil.getShowtimeString(movies, currentTheatre, weekdayResponse);
                                 }
-                                cardOutput = speechOutput + movieResponse.websiteUrl;
+                                cardOutput = speechOutput;
                             }
 
                             currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
@@ -1038,45 +1032,6 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 } else {
                     speechOutput = movieResponse.name + ' is ' + helperUtil.getRunTimeString(movieResponse.runTime) + ' long';
                     cardOutput = speechOutput;
-                }
-
-                currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
-                currentTheatre.save(function () { });
-                response.tellWithCard(speechOutput, cardTitle, cardOutput);
-            });
-        });
-    };
-
-    /**
-     * Gets a link to a movie trailer and puts in in the card.
-     */
-    intentHandlers.GetMovieTrailer = function (intent, session, response) {
-        var speechOutput = '',
-            cardTitle = 'AMC Movie Trailer',
-            cardOutput = '',
-            callStrings = new Array(),
-            movieNameSlot = intent.slots.movieName,
-            movieName = '';
-
-        // Verify that the input slots have values.
-        if (!movieNameSlot || !movieNameSlot.value) {
-            response.ask(textHelper.errors.misheardMovieTitle + textHelper.errors.reprompt);
-            return;
-        }
-        movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
-        
-        storage.loadTheatre(session, function (currentTheatre) {
-            callStrings.push('movies/' + movieName);
-            callStrings.push('movies/' + numberUtil.parseNumbersInString(movieName));            
-            console.log('API Call: ' + callStrings);
-            api.tryMultipleRequests(callStrings, function apiResponseCallback(err, movieResponse) {
-                if (err) {
-                    console.log(err);
-                    speechOutput = err;
-                    cardOutput = speechOutput;
-                } else {
-                    speechOutput = 'I put a link to the trailer for ' + movieResponse.name + ' in the card on your alexa app';
-                    cardOutput = 'Here is the trailer for: ' + movieResponse.name + ' ' + movieResponse.media.trailerHd;
                 }
 
                 currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
