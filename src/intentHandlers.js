@@ -14,6 +14,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
  * 
  * intentHandlers.INTENT_NAME = function (intent, session, response) {
  *  var speechOutput = '',
+ *      cardTitle = 'CARD TITLE',
  *     	cardOutput = '',
  *      callString = '',
  *      SLOT_NAME = intent.slots.INTENT_SLOT; // initialize variables needed here.
@@ -41,7 +42,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
  *          }
  * 
  *          // Return response:
- *          response.tellWithCard(speechOutput, 'CARD TITLE', cardOutput);
+ *          currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+ *          currentTheatre.save(function () { });
+ *          response.tellWithCard(speechOutput, cardTitle, cardOutput);
  *      
  *      }); //End API
  *  }); //End Session Load
@@ -58,6 +61,21 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
     };
 
     /**
+     * Repeat fucntion to get the last response that was said.
+     */
+    intentHandlers.RepeatIntent = function (intent, session, response) {
+        console.log('Repeating...');
+        storage.loadTheatre(session, function (currentTheatre) {
+            console.log('Theatre Loaded: ' + currentTheatre.data.lastAction);
+            if(typeof currentTheatre.data.lastAction === 'object') {
+                response.tellWithCard(currentTheatre.data.lastAction.lastSpeechOutput, currentTheatre.data.lastAction.lastCardTitle, currentTheatre.data.lastAction.lastCardOutput);
+            } else {
+                response.tell('I have nothing to repeat');
+            }
+        });
+    };
+
+    /**
      * Sets the users location based on a zip code that they've input.
      * 
      * Once their location is found and saved. The API is called to get
@@ -69,8 +87,8 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * default, until the user changes it themselves.
      */
     intentHandlers.SetLocationByZipCodeIntent = function (intent, session, response) {
-        //give a player points, ask additional question if slot values are missing.
         var speechOutput = '',
+            cardTitle = 'AMC Zip Code Request',
         	cardOutput = '',
             callString = '',
             zipCodeSlot = intent.slots.zipCode,
@@ -141,8 +159,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
 	                        cardOutput = speechOutput;
                         }
                         
+                        currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
                         currentTheatre.save(function () {
-                            response.tellWithCard(speechOutput, 'AMC Zip Code Request', cardOutput);
+                            response.tellWithCard(speechOutput, cardTitle, cardOutput);
                         });
                     });
                 }
@@ -156,13 +175,18 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      */
     intentHandlers.GetSavedZipCodeIntent = function (intent, session, response) {
         storage.loadTheatre(session, function (currentTheatre) {
-            var speechOutput = 'The zip code that I have saved is, ' + currentTheatre.data.location.zipCode +'.';
+            var speechOutput = 'The zip code that I have saved is, ' + currentTheatre.data.location.zipCode + '.',
+                cardTitle = 'AMC Zip Code Request',
+                that = this;
 
             if(currentTheatre.data.location.zipCode == 0) {
                 speechOutput = 'I have no zip code saved.';
             }
-
-            response.tellWithCard(speechOutput, 'AMC Zip Code Request', speechOutput);
+            
+            
+            currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': '' };
+            currentTheatre.save(function () { });
+            response.tellWithCard(speechOutput, cardTitle, speechOutput);
         });
     };
 
@@ -182,6 +206,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      */
     intentHandlers.SetLocationByCityStateIntent = function (intent, session, response) {
         var speechOutput = '',
+            cardTitle = 'AMC Location Request',
         	cardOutput = '',
             callString = '',
             citySlot = intent.slots.city,
@@ -241,8 +266,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     cardOutput = speechOutput;
                 }
                 
+                currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
                 currentTheatre.save(function () {
-                    response.tellWithCard(speechOutput, 'AMC Location Request', cardOutput);
+                    response.tellWithCard(speechOutput, cardTitle, cardOutput);
                 });
             });
         });
@@ -253,7 +279,8 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * to check and make sure that it's correct.
      */
     intentHandlers.GetSavedLocationIntent = function (intent, session, response) {
-        var speechOutput = '';
+        var speechOutput = '',
+            cardTitle = 'AMC Location Request';
 
         storage.loadTheatre(session, function (currentTheatre) {
             speechOutput = 'The location that I have saved is, ' + currentTheatre.data.location.city +', ' + currentTheatre.data.location.state + '.';
@@ -268,7 +295,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 speechOutput = 'I have no state saved. I have your city saved as: ' + currentTheatre.data.location.city;
             }
 
-            response.tellWithCard(speechOutput, 'AMC Location Request', speechOutput);
+            currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+            currentTheatre.save(function () { });
+            response.tellWithCard(speechOutput, cardTitle, speechOutput);
         });
     };
 
@@ -278,6 +307,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      */
     intentHandlers.SetFavoriteTheatreIntent = function (intent, session, response) {
         var speechOutput = textHelper.errors.theatreNotFound,
+            cardTitle = 'AMC Favorite Theatre Request',
             favoriteTheatreSlot = intent.slots.favoriteTheatre,
             favoriteTheatre = '',
             checkName = '';
@@ -317,17 +347,21 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         console.log(err);
                         speechOutput = err;
                         cardOutput = speechOutput;
-                        response.tellWithCard(speechOutput, 'AMC Favorite Theatre Request', cardOutput);
+                        
+                        currentTheatre.data.favoriteTheatre = {'id': theatreResponse.id, 'name': theatreResponse.name};
+                        response.tellWithCard(speechOutput, cardTitle, cardOutput);
                     } else {
                         currentTheatre.data.favoriteTheatre = {'id': theatreResponse.id, 'name': theatreResponse.name};
+                        currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
                         currentTheatre.save(function () {
-                            response.tellWithCard(speechOutput, 'AMC Favorite Theatre Request', speechOutput);
+                            response.tellWithCard(speechOutput, cardTitle, speechOutput);
                         });
                     }
                 });
             } else {
+                currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
                 currentTheatre.save(function () {
-                    response.tellWithCard(speechOutput, 'AMC Favorite Theatre Request', speechOutput);
+                    response.tellWithCard(speechOutput, cardTitle, speechOutput);
                 });
             }
         });
@@ -338,7 +372,8 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * as their favorite theatre to check and make sure that it's correct.
      */
     intentHandlers.GetFavoriteTheatreIntent = function (intent, session, response) {
-        var speechOutput = '';
+        var speechOutput = '',
+            cardTitle = 'AMC Favorite Theatre Request';
         
         storage.loadTheatre(session, function (currentTheatre) {
             speechOutput = 'The theatre that I have saved as your favorite is, ' + currentTheatre.data.favoriteTheatre.name +'.';
@@ -347,7 +382,9 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 speechOutput = 'I have no theatre saved as your favorite.';
             }
 
-            response.tellWithCard(speechOutput, 'AMC Favorite Theatre Request', speechOutput);
+            currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+            currentTheatre.save(function () { });
+            response.tellWithCard(speechOutput, cardTitle, speechOutput);
         });
     };
 
@@ -358,6 +395,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      */
     intentHandlers.ListLocalTheatresIntent = function (intent, session, response) {
         var speechOutput = '',
+            cardTitle = 'AMC Theatres Near You',
             cardOutput = '';
             
         storage.loadTheatre(session, function (currentTheatre) {
@@ -375,7 +413,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 }
                 cardOutput = speechOutput;
             }
-            response.tellWithCard(speechOutput, 'AMC Theatres Near You', cardOutput);
+
+            currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+            currentTheatre.save(function () { });
+            response.tellWithCard(speechOutput, cardTitle, cardOutput);
         });
     };
 
@@ -384,6 +425,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      */
     intentHandlers.GetPhoneNumberForTheatreIntent = function (intent, session, response) {
         var speechOutput = '',
+            cardTitle = 'AMC Theatre Phone Number',
             cardOutput = '',
             callString = '',
             callStrings = new Array(),
@@ -411,7 +453,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         speechOutput = 'The phone number for ' + apiResponse.name + ' is: ' + apiResponse.guestServicesPhoneNumber + '.';
                         cardOutput = speechOutput;
                     }
-                    response.tellWithCard(speechOutput, 'AMC Theatre Phone Number', cardOutput);
+
+                    currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                    currentTheatre.save(function () { });
+                    response.tellWithCard(speechOutput, cardTitle, cardOutput);
                 });
             } else {
                 theatre.name = helperUtil.replaceAll(theatreNameSlot.value, ' ', '-');
@@ -428,7 +473,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         console.log(err);
                         speechOutput = err;
                         cardOutput = speechOutput;
-                        response.tellWithCard(speechOutput, 'AMC Theatre Phone Number', cardOutput);
+
+                        currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                        currentTheatre.save(function () { });
+                        response.tellWithCard(speechOutput, cardTitle, cardOutput);
                     } else {
                         theatre.id = theatreResponse.id;
 
@@ -443,7 +491,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                 speechOutput = 'The phone number for ' + apiResponse.name + ' is: ' + apiResponse.guestServicesPhoneNumber + '.';
                                 cardOutput = speechOutput;
                             }
-                            response.tellWithCard(speechOutput, 'AMC Theatre Phone Number', cardOutput);
+
+                            currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                            currentTheatre.save(function () { });
+                            response.tellWithCard(speechOutput, cardTitle, cardOutput);
                         });
                     }
                 });
@@ -456,6 +507,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      */
     intentHandlers.GetAddressOfTheatreIntent = function (intent, session, response) {
         var speechOutput = '',
+            cardTitle = 'AMC Theatre Address',
             cardOutput = '',
             callString = '',
             callStrings = new Array(),
@@ -503,7 +555,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         speechOutput += ' See the card for a link to get directions.';
                         cardOutput += ' Directions ' + apiResponse.location.directionsUrl + '.';
                     }
-                    response.tellWithCard(speechOutput, 'AMC Theatre Address', cardOutput);
+
+                    currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                    currentTheatre.save(function () { });
+                    response.tellWithCard(speechOutput, cardTitle, cardOutput);
                 });
             } else {
                 theatre.name = helperUtil.replaceAll(theatreNameSlot.value, ' ', '-');
@@ -520,7 +575,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         console.log(err);
                         speechOutput = err;
                         cardOutput = speechOutput;
-                        response.tellWithCard(speechOutput, 'AMC Theatre Address', cardOutput);
+
+                        currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                        currentTheatre.save(function () { });
+                        response.tellWithCard(speechOutput, cardTitle, cardOutput);
                     } else {
                         theatre.id = theatreResponse.id;
                 
@@ -541,7 +599,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                 speechOutput += ' See the card for a link to get directions.';
                                 cardOutput += ' Directions ' + apiResponse.location.directionsUrl + '.';
                             }
-                            response.tellWithCard(speechOutput, 'AMC Theatre Address', cardOutput);
+
+                            currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                            currentTheatre.save(function () { });
+                            response.tellWithCard(speechOutput, cardTitle, cardOutput);
                         });
                     }
                 });
@@ -555,7 +616,8 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * lists the movies that are playing at all theatres.
      */
     intentHandlers.NowPlayingIntent = function (intent, session, response) {
-        var speechOutput = 'Now playing at a theatre near you.',
+        var speechOutput = 'Now playing at a theatre near you. ',
+            cardTitle = 'AMC Movies Now Playing',
             cardOutput = '',
             callString = '',
             weekdayNameSlot = intent.slots.weekday,
@@ -608,7 +670,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         }
                         cardOutput = speechOutput;
                     }
-                    response.tellWithCard(speechOutput, 'AMC Movies Now Playing', cardOutput);
+
+                    currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                    currentTheatre.save(function () { });
+                    response.tellWithCard(speechOutput, cardTitle, cardOutput);
                 });                
             } else {
                 console.log('API Call: movies/views/now-playing');
@@ -630,7 +695,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         }
                         cardOutput = speechOutput;
                     }
-                    response.tellWithCard(speechOutput, 'AMC Movies Now Playing', cardOutput);
+
+                    currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                    currentTheatre.save(function () { });
+                    response.tellWithCard(speechOutput, cardTitle, cardOutput);
                 });                                   
             }
         });
@@ -643,6 +711,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      */
     intentHandlers.ComingSoonIntent = function (intent, session, response) {
         var speechOutput = 'Coming soon to a theatre near you: ',
+            cardTitle = 'AMC Movies Coming Soon',
             cardOutput = '',
             movies = new Array();
 
@@ -665,8 +734,11 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         speechOutput = helperUtil.replaceLast(speechOutput, ',', ', and');
                     }
                     cardOutput = speechOutput;
-                }    
-                response.tellWithCard(speechOutput, 'AMC Movies Coming Soon', cardOutput);
+                }
+
+                currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                currentTheatre.save(function () { });
+                response.tellWithCard(speechOutput, cardTitle, cardOutput);
             });
         });
     };
@@ -677,6 +749,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      */
     intentHandlers.GetMovieShowtimesIntent = function (intent, session, response) {
         var speechOutput = '',
+            cardTitle = 'AMC Movie Showtimes',
             cardOutput = '',
             callString = '',
             callStrings = new Array(),
@@ -745,7 +818,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         console.log(err);
                         speechOutput = err;
                         cardOutput = speechOutput;
-                        response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
+
+                        currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                        currentTheatre.save(function () { });
+                        response.tellWithCard(speechOutput, cardTitle, cardOutput);
                     } else {
                         theatre.id = theatreResponse.id;
                         
@@ -760,7 +836,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                 console.log(err);
                                 speechOutput = err;
                                 cardOutput = speechOutput;
-                                response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
+
+                                currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                                currentTheatre.save(function () { });
+                                response.tellWithCard(speechOutput, cardTitle, cardOutput);
                             } else {
                                 // Get the page size of the request.
                                 callString = 'theatres/' + theatre.id + '/showtimes/' + weekday + '/?movie=' + movieResponse.slug;            
@@ -789,7 +868,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                                 }
                                                 cardOutput = speechOutput + movieResponse.websiteUrl;
                                             }
-                                            response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
+
+                                            currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                                            currentTheatre.save(function () { });
+                                            response.tellWithCard(speechOutput, cardTitle, cardOutput);
                                         });
                                     }
                                 });
@@ -813,7 +895,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         console.log(err);
                         speechOutput = err;
                         cardOutput = speechOutput;
-                        response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
+
+                        currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                        currentTheatre.save(function () { });
+                        response.tellWithCard(speechOutput, cardTitle, cardOutput);
                     } else {
 
                         // Find the movie's showtimes.
@@ -834,7 +919,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                 }
                                 cardOutput = speechOutput + movieResponse.websiteUrl;
                             }
-                            response.tellWithCard(speechOutput, 'AMC Movie Showtimes', cardOutput);
+
+                            currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                            currentTheatre.save(function () { });
+                            response.tellWithCard(speechOutput, cardTitle, cardOutput);
                         });
                     }
                 });
@@ -847,6 +935,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      */
     intentHandlers.GetMovieSynopsis = function (intent, session, response) {
         var speechOutput = '',
+            cardTitle = 'AMC Movie Synopsis',
             cardOutput = '',
             callStrings = new Array(),
             movieNameSlot = intent.slots.movieName,
@@ -872,7 +961,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     speechOutput = fixedMovieResponse.name + ': ' + fixedMovieResponse.synopsis;
                     cardOutput = speechOutput;
                 }
-                response.tellWithCard(speechOutput, 'AMC Movie Synopsis', cardOutput);
+
+                currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                currentTheatre.save(function () { });
+                response.tellWithCard(speechOutput, cardTitle, cardOutput);
             });
         });
     };
@@ -882,6 +974,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      */
     intentHandlers.GetMovieMPAARating = function (intent, session, response) {
         var speechOutput = '',
+            cardTitle = 'AMC Movie MPAA Rating',
             cardOutput = '',
             callStrings = new Array(),
             movieNameSlot = intent.slots.movieName,
@@ -907,7 +1000,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     speechOutput = apiRespofixedMovieResponsense.name + ' is rated ' + fixedMovieResponse.mpaaRating;
                     cardOutput = speechOutput;
                 }
-                response.tellWithCard(speechOutput, 'AMC Movie MPAA Rating', cardOutput);
+
+                currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                currentTheatre.save(function () { });
+                response.tellWithCard(speechOutput, cardTitle, cardOutput);
             });
         });
     };
@@ -917,6 +1013,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      */
     intentHandlers.GetMovieRunTime = function (intent, session, response) {
         var speechOutput = '',
+            cardTitle = 'AMC Movie Run Time',
             cardOutput = '',
             callStrings = new Array(),
             movieNameSlot = intent.slots.movieName,
@@ -942,7 +1039,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     speechOutput = movieResponse.name + ' is ' + helperUtil.getRunTimeString(movieResponse.runTime) + ' long';
                     cardOutput = speechOutput;
                 }
-                response.tellWithCard(speechOutput, 'AMC Movie Run Time', cardOutput);
+
+                currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                currentTheatre.save(function () { });
+                response.tellWithCard(speechOutput, cardTitle, cardOutput);
             });
         });
     };
@@ -952,6 +1052,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      */
     intentHandlers.GetMovieTrailer = function (intent, session, response) {
         var speechOutput = '',
+            cardTitle = 'AMC Movie Trailer',
             cardOutput = '',
             callStrings = new Array(),
             movieNameSlot = intent.slots.movieName,
@@ -977,7 +1078,10 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     speechOutput = 'I put a link to the trailer for ' + movieResponse.name + ' in the card on your alexa app';
                     cardOutput = 'Here is the trailer for: ' + movieResponse.name + ' ' + movieResponse.media.trailerHd;
                 }
-                response.tellWithCard(speechOutput, 'AMC Movie Trailer', cardOutput);
+
+                currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                currentTheatre.save(function () { });
+                response.tellWithCard(speechOutput, cardTitle, cardOutput);
             });
         });
     };

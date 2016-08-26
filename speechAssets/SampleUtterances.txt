@@ -1,6 +1,10 @@
 EndIntent cancel
 EndIntent stop
 
+RepeatIntent repeat
+RepeatIntent repeat that
+RepeatIntent say that again
+
 SetLocationByZipCodeIntent {zipCode}
 SetLocationByZipCodeIntent my zip code is {zipCode}
 SetLocationByZipCodeIntent set my zip code to {zipCode}
@@ -17,6 +21,7 @@ SetLocationByCityStateIntent save my location as {city} in {state}
 SetLocationByCityStateIntent i live in {city} {state}
 SetLocationByCityStateIntent i live in {city} in {state}
 
+SetFavoriteTheatreIntent {favoriteTheatre}
 SetFavoriteTheatreIntent save my theatre as {favoriteTheatre}
 SetFavoriteTheatreIntent save my favorite theatre as {favoriteTheatre}
 SetFavoriteTheatreIntent save my preferred theatre as {favoriteTheatre}

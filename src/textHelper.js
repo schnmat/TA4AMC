@@ -33,7 +33,7 @@ var textHelper = (function () {
         getErrorMessage: function(errCode) {
             var errMessage = this.errors.amcAPIUnavailable;
 
-            if(errCode == 5104) {
+            if(errCode == 5104 || errCode == 5108) {
                 errMessage = this.errors.theatreNotFound;
             } else if(errCode == 5210) {
                 errMessage = this.errors.invalidTheatreID;

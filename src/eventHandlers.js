@@ -29,6 +29,8 @@ var registerEventHandlers = function (eventHandlers, skillContext) {
                 speechOutput += 'Welcome to AMC Theatres. What can I do for you?';
                 reprompt = textHelper.nextHelp;
             }
+            
+            currentTheatre.save(function () { });
             response.ask(speechOutput, reprompt);
         });
     };

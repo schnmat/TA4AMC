@@ -41,6 +41,19 @@ var helperFunctions = (function () {
             if(!data.favoriteTheatre.hasOwnProperty('name')) {
                 data.favoriteTheatre.name = '';
             }
+            
+            if(!data.hasOwnProperty('lastAction')) {
+                data.lastAction = {};
+            }
+            if(!data.lastAction.hasOwnProperty('lastSpeechOutput')) {
+                data.lastAction.speechOutput = '';
+            }
+            if(!data.lastAction.hasOwnProperty('lastCardTitle')) {
+                data.lastAction.cardTitle = '';
+            }
+            if(!data.lastAction.hasOwnProperty('lastCardOutput')) {
+                data.lastAction.cardOutput = '';
+            }
         },
 
         getMatchingTheatre: function(localTheatres, theatreName) {

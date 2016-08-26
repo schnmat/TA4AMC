@@ -22,7 +22,10 @@ var storage = (function () {
                             'state': '',
                             'utcOffset': '-5.00' },
                 favoriteTheatre: { 'id': 0,
-                                   'name': '' }
+                                   'name': '' },
+                lastAction: { 'lastSpeechOutput': '',
+                              'lastCardTitle': '',
+                              'lastCardOutput': '' }
             };
         }
         this._session = session;

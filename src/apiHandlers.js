@@ -65,7 +65,7 @@ var apiHandlers = (function () {
                         var apiResponseObject = JSON.parse(apiResponseString);
             
                         if (apiResponseObject.errors) {
-                            console.log('AMC API error: (' + apiResponseObject.errors[0].code + ') ' + apiResponseObject.errors[0].exceptionMessage);
+                            //console.log('AMC API error: (' + apiResponseObject.errors[0].code + ') ' + apiResponseObject.errors[0].exceptionMessage);
                             responses.push({ error: textHelper.getErrorMessage(apiResponseObject.errors[0].code), data: null });
                             completed_requests++;
                         } else {
@@ -80,24 +80,18 @@ var apiHandlers = (function () {
                          * response that isn't an error.
                          * Or return the last error if no good responses were found.
                          */
-                        var responseSent = false;
-                        var sendResponse = { error: textHelper.getErrorMessage(0), data: null };
+                        var sendResponse = responses[responses.length - 1];
                         for(var index = 0; index < responses.length; index++) {
-                            
                             if(responses[index].error == null) {
-                                responseSent = true;
                                 sendResponse = responses[index];
                                 break;
                             }
-
-                            if(responseSent == false && index == (responses.length - 1)) {
-                                sendResponse = responses[index];
-                            }
                         }
+                        //console.log("Returning error: " + sendResponse.error);
                         apiResponseCallback(sendResponse.error, sendResponse.data);
                     }
                 }).on('error', function (e) {
-                    console.log('Communications error: ' + e.message);
+                    //console.log('Communications error: ' + e.message);
                     responses.push({ error: new Error(e.message), data: null });
                     completed_requests++;
                 });

@@ -6,6 +6,11 @@
     },
 
     {
+      "intent": "RepeatIntent",
+      "slots": []
+    },
+
+    {
       "intent": "SetLocationByZipCodeIntent",
       "slots": [
         {
