@@ -1,5 +1,8 @@
 EndIntent cancel
 EndIntent stop
+EndIntent exit
+EndIntent quit
+EndIntent good bye
 
 RepeatIntent repeat
 RepeatIntent repeat that
@@ -53,13 +56,20 @@ ListLocalTheatresIntent what theatres are in my area
 ListLocalTheatresIntent what theatres are in my hometown
 ListLocalTheatresIntent what theatres are in my town
 ListLocalTheatresIntent what theatres are in my city
+ListLocalTheatresIntent what theatres are in {city} {state}
 ListLocalTheatresIntent what theatres are near me
+ListLocalTheatresIntent what theatres are near {city} {state}
 ListLocalTheatresIntent what theatres are there
 ListLocalTheatresIntent what theatres are there here
 ListLocalTheatresIntent what theatres are there near me
+ListLocalTheatresIntent what theatres are there near {city} {state}
+ListLocalTheatresIntent what theatres are there in {city} {state}
 ListLocalTheatresIntent what theatres are here
 ListLocalTheatresIntent what theatres are near by
+ListLocalTheatresIntent what theatres are near by {city} {state}
 ListLocalTheatresIntent what theatres are close by
+ListLocalTheatresIntent what theatres are close by {city} {state}
+ListLocalTheatresIntent what theatres are close to {city} {state}
 
 NowPlayingIntent what movies are playing
 NowPlayingIntent what movies are playing now

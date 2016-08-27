@@ -308,8 +308,11 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
     intentHandlers.SetFavoriteTheatreIntent = function (intent, session, response) {
         var speechOutput = textHelper.errors.theatreNotFound,
             cardTitle = 'AMC Favorite Theatre Request',
+            cardOutput = textHelper.errors.theatreNotFound,
+            callStrings = new Array(),
             favoriteTheatreSlot = intent.slots.favoriteTheatre,
             favoriteTheatre = '',
+            theatre = {'id': 0, 'name': ''},
             checkName = '';
         
         if (!favoriteTheatreSlot || !favoriteTheatreSlot.value) {
@@ -326,14 +329,15 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 checkName = element.name.replace('AMC ', '').toLowerCase();
                 if(element.name.toLowerCase() == favoriteTheatre.toLowerCase() ||
                                     checkName == favoriteTheatre.toLowerCase()) {
-                    currentTheatre.data.favoriteTheatre = {'id': element.id, 'name': element.name};            
+                    theatre = {'id': element.id, 'name': element.name};
+                    currentTheatre.data.favoriteTheatre = theatre;             
                     speechOutput = 'Thank you, saving your favorite theatre, ' + element.name + '. ';
                 }
             }, this);
 
             // Try and find the theatre if it couldn't be found in the saved local theatre list.
-            if(currentTheatre.id == 0) {
-                favoriteTheatre = helperUtil.replaceAll(theatre.name, ' ', '-');
+            if(theatre.id == 0) {
+                favoriteTheatre = helperUtil.replaceAll(favoriteTheatre, ' ', '-');
 
                 // Find the theatre to look in:
                 callStrings.push('theatres/' + favoriteTheatre);
@@ -347,22 +351,24 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                         console.log(err);
                         speechOutput = err;
                         cardOutput = speechOutput;
-                        
-                        currentTheatre.data.favoriteTheatre = {'id': theatreResponse.id, 'name': theatreResponse.name};
-                        response.tellWithCard(speechOutput, cardTitle, cardOutput);
                     } else {
+                        speechOutput = 'Thank you, saving your favorite theatre, ' + theatreResponse.name + '. ';
+                        cardOutput = speechOutput;
+
                         currentTheatre.data.favoriteTheatre = {'id': theatreResponse.id, 'name': theatreResponse.name};
-                        currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
-                        currentTheatre.save(function () {
-                            response.tellWithCard(speechOutput, cardTitle, speechOutput);
-                        });
+                        currentTheatre.data.location = { 'city': theatreResponse.location.city,
+                                                         'state': theatreResponse.location.state,
+                                                         'zipCode': theatreResponse.location.postalCode,
+                                                         'utcOffset': helperUtil.replaceAll(theatreResponse.utcOffset, ':', '.') };
                     }
+                    currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                    currentTheatre.save(function () { });
+                    response.tellWithCard(speechOutput, cardTitle, cardOutput);
                 });
             } else {
                 currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
-                currentTheatre.save(function () {
-                    response.tellWithCard(speechOutput, cardTitle, speechOutput);
-                });
+                currentTheatre.save(function () { });
+                response.tellWithCard(speechOutput, cardTitle, cardOutput);
             }
         });
     };
@@ -396,27 +402,70 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
     intentHandlers.ListLocalTheatresIntent = function (intent, session, response) {
         var speechOutput = '',
             cardTitle = 'AMC Theatres Near You',
-            cardOutput = '';
-            
+            cardOutput = '',
+            callString = '',
+            citySlot = intent.slots.city,
+        	stateSlot = intent.slots.state,
+            cityName = '',
+            stateName = '',
+            localTheatres = new Array(),
+            theatres = new Array();
+
         storage.loadTheatre(session, function (currentTheatre) {
-                    
-            if(currentTheatre.data.localTheatres.length < 1) {
-                speechOutput = textHelper.errors.localTheatresNotFound;
+            if (citySlot && citySlot.value) {
+                cityName = citySlot.value.replace(' ', '-');
             } else {
-                speechOutput += 'Here are the theatres I found in your city. ';
-                for(var i = 0, l = currentTheatre.data.localTheatres.length; i < l; i++) {
-                    speechOutput += currentTheatre.data.localTheatres[i].name + ', ';
-                }
-                speechOutput = helperUtil.replaceLast(speechOutput, ', ', '.');
-                if(speechOutput.lastIndexOf(',') >= 0) {
-                    speechOutput = helperUtil.replaceLast(speechOutput, ',', ', and');
-                }
-                cardOutput = speechOutput;
+                cityName = currentTheatre.data.location.city.replace(' ', '-');
             }
 
-            currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
-            currentTheatre.save(function () { });
-            response.tellWithCard(speechOutput, cardTitle, cardOutput);
+            if (stateSlot && stateSlot.value) {
+                stateName = stateSlot.value.replace(' ', '-');
+            } else {
+                stateName = currentTheatre.data.location.state.replace(' ', '-');
+            }
+
+            if (cityName == '' || stateName == '') {
+                response.tell('I\'m sorry, I don\'t seem to know where to look. Perhaps I misheard the city or state name.');
+            }
+
+            //Note: City and State needs to have spaces replaced with dashes.
+            callString = 'theatres?state=' + stateName + '&city=' + cityName;
+            console.log('API Call: ' + callString);
+            api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                if (err) {
+                    console.log(err);
+                    speechOutput = err;
+                    cardOutput = speechOutput;
+                } else {
+                    theatres = apiResponse._embedded.theatres;
+                    
+                    if(theatres.length < 1) {
+                        speechOutput += textHelper.errors.localTheatresNotFound;
+                    } else {
+                        theatres.forEach(function(element) {
+                            localTheatres.push({'id': element.id, 'name': element.name});                          
+                        }, this);
+
+                        if(theatres.length === 1) {
+                            speechOutput += 'I found one theatre in your city. ' + localTheatres[0].name + '.';
+                        } else {
+                            speechOutput += 'Here are the theatres that I found in your city: ';
+                            for(var i = 0, l = localTheatres.length; i < l; i++) {
+                                speechOutput += localTheatres[i].name + ', ';
+                            }
+                            speechOutput = helperUtil.replaceLast(speechOutput, ', ', '.');
+                            if(speechOutput.lastIndexOf(',') >= 0) {
+                                speechOutput = helperUtil.replaceLast(speechOutput, ',', ', and');
+                            }
+                        }
+                    }
+                    cardOutput = speechOutput;
+                }
+                
+                currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                currentTheatre.save(function () { });
+                response.tellWithCard(speechOutput, cardTitle, cardOutput);
+            });
         });
     };
 
@@ -761,7 +810,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             response.ask(textHelper.errors.misheardMovieTitle + textHelper.errors.reprompt);
             return;
         }
-        movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
+        movieName = helperUtil.replaceAll(helperUtil.replaceAll(movieNameSlot.value, ' ', '-'), '\'', '-');
         
         // Optional. Defaults to 'today'.
         if (weekdayNameSlot && weekdayNameSlot.value) {
@@ -909,7 +958,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                                 if(movies.length < 1) {
                                     speechOutput = textHelper.errors.movieNotFound;
                                 } else {
-                                    speechOutput += helperUtil.getShowtimeString(movies, currentTheatre, weekdayResponse);
+                                    speechOutput += helperUtil.getShowtimeString(movies, weekdayResponse);
                                 }
                                 cardOutput = speechOutput;
                             }
@@ -940,7 +989,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             response.ask(textHelper.errors.misheardMovieTitle + textHelper.errors.reprompt);
             return;
         }
-        movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
+        movieName = helperUtil.replaceAll(helperUtil.replaceAll(movieNameSlot.value, ' ', '-'), '\'', '-');
         
         storage.loadTheatre(session, function (currentTheatre) {
             callStrings.push('movies/' + movieName);
@@ -979,7 +1028,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             response.ask(textHelper.errors.misheardMovieTitle + textHelper.errors.reprompt);
             return;
         }
-        movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
+        movieName = helperUtil.replaceAll(helperUtil.replaceAll(movieNameSlot.value, ' ', '-'), '\'', '-');
         
         storage.loadTheatre(session, function (currentTheatre) {
             callStrings.push('movies/' + movieName);
@@ -1018,7 +1067,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             response.ask(textHelper.errors.misheardMovieTitle + textHelper.errors.reprompt);
             return;
         }
-        movieName = helperUtil.replaceAll(movieNameSlot.value, ' ', '-');
+        movieName = helperUtil.replaceAll(helperUtil.replaceAll(movieNameSlot.value, ' ', '-'), '\'', '-');
         
         storage.loadTheatre(session, function (currentTheatre) {
             callStrings.push('movies/' + movieName);

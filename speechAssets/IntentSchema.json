@@ -81,7 +81,16 @@
 
     {
       "intent": "ListLocalTheatresIntent",
-      "slots": []
+      "slots": [
+        {
+        "name": "city",
+        "type": "AMAZON.US_CITY"
+        },
+        {
+        "name": "state",
+        "type": "AMAZON.US_STATE"
+        }
+      ]
     },
 
     {

@@ -18,12 +18,9 @@ var registerEventHandlers = function (eventHandlers, skillContext) {
         storage.loadTheatre(session, function (currentTheatre) {
             var speechOutput = '',
                 reprompt;
-                            
-            if (currentTheatre.data.location.zipCode < 1) {
-                speechOutput += 'Welcome to AMC Theatres, Please tell me your location.';
-                reprompt = 'Please tell me your location, either by city and state, or by zip code, so that I can find showtimes in your local theatre.';
-            } else if (currentTheatre.data.favoriteTheatre.id < 1) {
-                speechOutput += 'Welcome to AMC Theatres, I don\'t have a theatre set as your favorite yet.';
+                   
+            if (currentTheatre.data.favoriteTheatre.id < 1) {
+                speechOutput += 'Welcome to AMC Theatres, please tell me the name of your local AMC theatre so that I can find showtimes, or tell me your location by city and state and I can search for lcoal theatres to use.';
                 reprompt = textHelper.completeHelp;
             } else {
                 speechOutput += 'Welcome to AMC Theatres. What can I do for you?';

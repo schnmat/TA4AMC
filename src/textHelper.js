@@ -13,7 +13,7 @@ var textHelper = (function () {
         + ' set my zip code to,'
         + ' what theatres are near me,'
         + ' and exit.',
-        nextHelp: 'You can set your zip code and favorite theatre, get currently playing movies and their showtimes, or say help. What would you like?',
+        nextHelp: 'You can get a list of movies playing at your local theatre, or showtimes for a movie, or say help to get a list of questions that you can ask. What would you like?',
         errors: {
             googleAPIUnavailable: 'Sorry, the Google geocode API service is experiencing a problem. Please try again later.',
             amcAPIUnavailable: 'Sorry, the AMC API service is experiencing a problem. Please try again later.',

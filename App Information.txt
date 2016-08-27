@@ -27,3 +27,17 @@ Functions in this build:
  - Get a list of showtimes for a movie by the movie title
     - The date defaults to today, but other days can be chosen (e.g. tomorrow or friday).
     - Defaults to the preferred theatre but other theatres can be chosen by adding "at {theatre name}"
+
+Local data stored:
+ - An array of local theatres is gathered whenever the location is set. So that api requests that require
+   a theatre's id can be made without first getting the theatre's id from a separate api call.
+ - A location object is saved with the users' city, state, zip code, and utc offset. The zip code isn't
+   used, and the city/state is only used to be able to ask what theatres are in the user's location
+   without having to specify the location again. The utc offset is used to convert time from the server
+   to the user's local time zone.
+ - A favorite theatre object can be set by the user. When the user sets their location the first theatre
+   in the list of theatres found in their location is automatically set as their favorite. It's used to
+   be able to request showtimes and other movie information without having to specify which theatre to
+   look at in the request.
+ - A last action object is saved every time a request is made. It holds the last response given so that
+   the user can request Alexa to repeat the last action.
