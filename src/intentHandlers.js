@@ -64,9 +64,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
      * Repeat fucntion to get the last response that was said.
      */
     intentHandlers.RepeatIntent = function (intent, session, response) {
-        console.log('Repeating...');
         storage.loadTheatre(session, function (currentTheatre) {
-            console.log('Theatre Loaded: ' + currentTheatre.data.lastAction);
             if(typeof currentTheatre.data.lastAction === 'object') {
                 response.tellWithCard(currentTheatre.data.lastAction.lastSpeechOutput, currentTheatre.data.lastAction.lastCardTitle, currentTheatre.data.lastAction.lastCardOutput);
             } else {
@@ -184,7 +182,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             }
             
             
-            currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': '' };
+            currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': speechOutput };
             currentTheatre.save(function () { });
             response.tellWithCard(speechOutput, cardTitle, speechOutput);
         });
@@ -295,7 +293,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 speechOutput = 'I have no state saved. I have your city saved as: ' + currentTheatre.data.location.city;
             }
 
-            currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+            currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': speechOutput };
             currentTheatre.save(function () { });
             response.tellWithCard(speechOutput, cardTitle, speechOutput);
         });
@@ -357,7 +355,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
 
                         currentTheatre.data.favoriteTheatre = {'id': theatreResponse.id, 'name': theatreResponse.name};
                         currentTheatre.data.location = { 'city': theatreResponse.location.city,
-                                                         'state': theatreResponse.location.state,
+                                                         'state': theatreResponse.location.stateName,
                                                          'zipCode': theatreResponse.location.postalCode,
                                                          'utcOffset': helperUtil.replaceAll(theatreResponse.utcOffset, ':', '.') };
                     }
@@ -388,7 +386,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 speechOutput = 'I have no theatre saved as your favorite.';
             }
 
-            currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+            currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': speechOutput };
             currentTheatre.save(function () { });
             response.tellWithCard(speechOutput, cardTitle, speechOutput);
         });
@@ -663,6 +661,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
             cardTitle = 'AMC Movies Now Playing',
             cardOutput = '',
             callString = '',
+            callStrings = new Array(),
             weekdayNameSlot = intent.slots.weekday,
             weekday = new Date(),
             weekdayResponse = 'today',
@@ -688,9 +687,62 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                 }
             } else {
                 theatre.id = currentTheatre.data.favoriteTheatre.id;
+                theatre.name = currentTheatre.data.favoriteTheatre.name;
             }
-                    
-            if(theatre.id > 0) {
+
+            if (theatre.id == 0 && (theatre.name != '' && theatre.name != null)) {
+                console.log('Using theatre: ' + theatre.name);                
+                theatre.name = helperUtil.replaceAll(theatre.name, ' ', '-');
+
+                // Find the theatre to look in:
+                callStrings.push('theatres/' + theatre.name);
+                callStrings.push('theatres/amc-' + theatre.name); 
+                callStrings.push('theatres/' + numberUtil.parseNumbersInString(theatre.name));
+                callStrings.push('theatres/amc-' + numberUtil.parseNumbersInString(theatre.name));
+
+                console.log('API Call: ' + callStrings);
+                api.tryMultipleRequests(callStrings, function apiResponseCallback(err, theatreResponse) {
+                    if (err) {
+                        console.log(err);
+                        speechOutput = err;
+                        cardOutput = speechOutput;
+
+                        currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                        currentTheatre.save(function () { });
+                        response.tellWithCard(speechOutput, cardTitle, cardOutput);
+                    } else {
+                        theatre.id = theatreResponse.id;
+                        theatre.name = theatreResponse.name;
+                        speechOutput = 'Now playing at ' + theatre.name + ': ';
+                
+                        callString = 'theatres/' + theatre.id + '/showtimes/' + weekday;
+                        console.log('API Call: ' + callString);
+                        api.makeRequest(callString, function apiResponseCallback(err, apiResponse) {
+                            if (err) {
+                                console.log(err);
+                                speechOutput = err;
+                                cardOutput = speechOutput;
+                            } else {
+                                movies = apiResponse._embedded.showtimes;
+                                for(var i = 0, l = movies.length; i < l; i++) {
+                                    if(speechOutput.indexOf(movies[i].movieName) < 0) {
+                                        speechOutput += movies[i].movieName + ', ';
+                                    }
+                                }
+                                speechOutput = helperUtil.replaceLast(speechOutput, ', ', '.');
+                                if(speechOutput.lastIndexOf(',') >= 0) {
+                                    speechOutput = helperUtil.replaceLast(speechOutput, ',', ', and');
+                                }
+                                cardOutput = speechOutput;
+                            }
+                            currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
+                            currentTheatre.save(function () { });
+                            response.tellWithCard(speechOutput, cardTitle, cardOutput);
+                        });
+                    }
+                });
+            }
+            else if (theatre.id > 0) {
                 speechOutput = 'Now playing at ' + theatre.name + ': ';
                 
                 callString = 'theatres/' + theatre.id + '/showtimes/' + weekday;
@@ -717,7 +769,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     currentTheatre.data.lastAction = { 'lastSpeechOutput': speechOutput, 'lastCardTitle': cardTitle, 'lastCardOutput': cardOutput };
                     currentTheatre.save(function () { });
                     response.tellWithCard(speechOutput, cardTitle, cardOutput);
-                });                
+                });
             } else {
                 console.log('API Call: movies/views/now-playing');
                 api.makeRequest('movies/views/now-playing', function apiResponseCallback(err, apiResponse) {
@@ -728,8 +780,8 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     } else {
                         movies = apiResponse._embedded.movies;
                         for(var i = 0, l = movies.length; i < l; i++) {
-                            if(speechOutput.indexOf(movies[i].movieName) < 0) {
-                                speechOutput += movies[i].movieName + ', ';
+                            if(speechOutput.indexOf(movies[i].name) < 0) {
+                                speechOutput += movies[i].name + ', ';
                             }
                         }
                         speechOutput = helperUtil.replaceLast(speechOutput, ', ', '.');
@@ -814,6 +866,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
         
         // Optional. Defaults to 'today'.
         if (weekdayNameSlot && weekdayNameSlot.value) {
+            console.log('weekday slot = ' + weekdayNameSlot.value);
             weekdayResponse = weekdayNameSlot.value;
         }
         
@@ -1001,7 +1054,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     speechOutput = err;
                     cardOutput = speechOutput;
                 } else {
-                    speechOutput = fixedMovieResponse.name + ': ' + fixedMovieResponse.synopsis;
+                    speechOutput = movieResponse.name + ': ' + movieResponse.synopsis;
                     cardOutput = speechOutput;
                 }
 
@@ -1040,7 +1093,7 @@ var registerIntentHandlers = function (intentHandlers, skillContext) {
                     speechOutput = err;
                     cardOutput = speechOutput;
                 } else {
-                    speechOutput = apiRespofixedMovieResponsense.name + ' is rated ' + fixedMovieResponse.mpaaRating;
+                    speechOutput = movieResponse.name + ' is rated ' + movieResponse.mpaaRating;
                     cardOutput = speechOutput;
                 }
 

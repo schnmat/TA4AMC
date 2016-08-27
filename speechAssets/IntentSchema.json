@@ -11,6 +11,11 @@
     },
 
     {
+      "intent": "HelpIntent",
+      "slots": []
+    },
+
+    {
       "intent": "SetLocationByZipCodeIntent",
       "slots": [
         {
@@ -99,6 +104,10 @@
         {
       		"name": "weekday",
       		"type": "WEEKDAY"
+        },
+        {
+          "name": "theatreName",
+          "type": "THEATRENAME"
         }
       ]
     },

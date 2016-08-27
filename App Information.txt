@@ -5,6 +5,13 @@ https://www.amctheatres.com/movie-theatres
  - Eden Prairie, Minnesota 55344
  - Phoenix, Arizona 85044
 
+Some theatre names that can be used:
+ - Esquire 7
+ - Chesterfield 14
+ - Ward Parkway 14
+ - Independence Commons 20
+ - Headquarters Plaza 10
+
 Functions in this build:
  - Set location by zip code
  - Set location by city/state

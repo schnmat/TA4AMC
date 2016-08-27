@@ -216,7 +216,7 @@ var dateFunctions = (function () {
                 while(found === 0) {
                     var dayFound = DAYS_OF_WEEK[nextDay.getDay()];
                     if(dayFound && (dayFound.toLowerCase() == weekday.toLowerCase())) {
-                        console.log('date match');
+                        //console.log('date match');
                         found = 1;
                         break;
                     } else {
@@ -253,8 +253,8 @@ var dateFunctions = (function () {
                 curHours = currentDate.getHours(),
                 curMinutes = currentDate.getMinutes();
             
-            console.log('Checking: ' + this.getFormattedTimeAmPm(date) +
-                        ' vs ' + this.getFormattedTimeAmPm(currentDate));
+            /*console.log('Checking: ' + this.getFormattedTimeAmPm(date) +
+                        ' vs ' + this.getFormattedTimeAmPm(currentDate));*/
             if(day > curDay) {
                 return 1;
             } else if(day == curDay) {
@@ -266,7 +266,7 @@ var dateFunctions = (function () {
                 }
             }
             
-            console.log('Made it through');
+            //console.log('Made it through');
             return -1;
         }
     }

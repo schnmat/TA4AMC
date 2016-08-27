@@ -14,6 +14,10 @@ SetLocationByZipCodeIntent set my zip code to {zipCode}
 SetLocationByZipCodeIntent save my zip code as {zipCode}
 
 GetSavedZipCodeIntent what is my zip code
+GetSavedZipCodeIntent what is my saved zip code
+
+GetSavedLocationIntent what is my location
+GetSavedLocationIntent what is my saved location
 
 SetLocationByCityStateIntent {city} {state}
 SetLocationByCityStateIntent i am in {city} {state}
@@ -85,6 +89,20 @@ NowPlayingIntent what is playing {weekday}
 NowPlayingIntent what is playing on {weekday}
 NowPlayingIntent what is playing next {weekday}
 NowPlayingIntent what is playing this {weekday}
+NowPlayingIntent what movies are playing at {theatreName}
+NowPlayingIntent what movies are playing now at {theatreName}
+NowPlayingIntent what movies are playing right now at {theatreName}
+NowPlayingIntent what movies are playing {weekday} at {theatreName}
+NowPlayingIntent what movies are playing on {weekday} at {theatreName}
+NowPlayingIntent what movies are playing next {weekday} at {theatreName}
+NowPlayingIntent what movies are playing this {weekday} at {theatreName}
+NowPlayingIntent what is playing at {theatreName}
+NowPlayingIntent what is playing now at {theatreName}
+NowPlayingIntent what is playing right now at {theatreName}
+NowPlayingIntent what is playing {weekday} at {theatreName}
+NowPlayingIntent what is playing on {weekday} at {theatreName}
+NowPlayingIntent what is playing next {weekday} at {theatreName}
+NowPlayingIntent what is playing this {weekday} at {theatreName}
 
 ComingSoonIntent what is coming soon
 ComingSoonIntent what movies are coming soon
@@ -97,12 +115,13 @@ ComingSoonIntent what movies are playing soon
 ComingSoonIntent what is coming soon
 
 GetMovieShowtimesIntent what time is {movieName} playing
+GetMovieShowtimesIntent what time is {movieName} playing at {theatreName}
 GetMovieShowtimesIntent what time is {movieName} playing {weekday}
 GetMovieShowtimesIntent what time is {movieName} playing {weekday} at {theatreName}
 GetMovieShowtimesIntent what time is {movieName} playing on {weekday}
 GetMovieShowtimesIntent what time is {movieName} playing on {weekday} at {theatreName}
-GetMovieShowtimesIntent what time is {movieName} playing at {theatreName}
 GetMovieShowtimesIntent when is {movieName} playing
+GetMovieShowtimesIntent when is {movieName} playing at {theatreName}
 GetMovieShowtimesIntent when is {movieName} playing {weekday}
 GetMovieShowtimesIntent when is {movieName} playing {weekday} at {theatreName}
 GetMovieShowtimesIntent when is {movieName} playing on {weekday}
@@ -123,3 +142,19 @@ GetMovieMPAARating what is the mpaa rating for {movieName}
 GetMovieRunTime how long is {movieName}
 GetMovieRunTime what is the run time of {movieName}
 GetMovieRunTime what is the length of {movieName}
+
+HelpIntent help
+HelpIntent help me
+HelpIntent what can I ask you
+HelpIntent get help
+HelpIntent what commands can I ask
+HelpIntent what commands can I say
+HelpIntent what can I do
+HelpIntent what can I use this for
+HelpIntent what questions can I ask
+HelpIntent what can you do
+HelpIntent what do you do
+HelpIntent how do I use you
+HelpIntent how can I use you
+HelpIntent what can you tell me
+

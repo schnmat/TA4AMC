@@ -86,7 +86,7 @@ var helperFunctions = (function () {
                 var showDate = dateUtil.getLocalDate(utcOffset, new Date(movie.showDateTimeUtc));
                 var sellByDate = dateUtil.getLocalDate(utcOffset, new Date(movie.sellUntilDateTimeUtc));
 
-                console.log('Showtime: ' + dateUtil.getFormattedTimeAmPm(showDate));
+                //console.log('Showtime: ' + dateUtil.getFormattedTimeAmPm(showDate));
                 if(dateUtil.afterCurrentTime(utcOffset, sellByDate) > -1){
                     if(this.isMovieThreeDee(movie.attributes)) {
                         threedeeShowtimes.push(dateUtil.getFormattedTimeAmPm(showDate));
